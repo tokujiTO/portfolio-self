@@ -1,5 +1,6 @@
 import AnimatedElement from "./components/animatedElement";
 import Navbar from "./components/navbar";
+import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Removed.png";
 
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -34,9 +35,12 @@ function App() {
   ];
 
   return (
-    <div className="flex items-center flex-col px-80 min-h-screen bg-linear-to-b from-[#e5e5e5] to-[#d5d5d5]">
+    <div className="flex items-center flex-col px-80 gap-8 min-h-screen bg-linear-to-b from-[#e5e5e5] to-[#d5d5d5]">
       <Navbar />
-      <div className="h-100" />
+      <div className="h-20" />
+      <div className="flex justify-center min-h-52">
+        <img src={photo} alt="Profile" className="w-1/2 " />
+      </div>
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="flex justify-center items-center gap-4">
           <AnimatedElement>
