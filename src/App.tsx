@@ -1,49 +1,33 @@
+import { useMemo, useState } from "react";
 import AnimatedElement from "./components/animatedElement";
 import Navbar from "./components/navbar";
 import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Removed.png";
 import AboutMe from "./components/Sections/aboutMe";
 import Footer from "./components/footer";
 import Card from "./components/card";
+import Carousel from "./components/carousel";
+import { projects } from "./assets/projects";
+import { tecnologies } from "./assets/tecnologies";
 
 function App() {
-  const tecnologies = [
-    { skill: "React", level: "Avançado" },
-    { skill: "TypeScript", level: "Avançado" },
-    { skill: "RStudio", level: "Básico" },
-    { skill: "JavaScript", level: "Intermediário" },
-    { skill: "MySQL", level: "Intermediário" },
-    { skill: "Tableau", level: "Básico" },
-    { skill: "Python", level: "Intermediário" },
-    { skill: "React Native", level: "Intermediário" },
-    { skill: "MongoDB", level: "Básico" },
-    { skill: "Java", level: "Intermediário" },
-    { skill: "Git/GitHub", level: "Avançado" },
-    { skill: "AWS", level: "Básico" },
-    { skill: "VBA", level: "Intermediário" },
-    { skill: "UML Modeling", level: "Avançado" },
-    { skill: "C", level: "Básico" },
-    { skill: "Azure", level: "Intermediário" },
-    { skill: "Astah", level: "Intermediário" },
-    { skill: "Estatística", level: "Intermediário" },
-    { skill: "Figma", level: "Intermediário" },
-    { skill: "R", level: "Intermediário" },
-    { skill: "Algoritmos", level: "Intermediário" },
-    { skill: "Excel", level: "Intermediário" },
-    { skill: "Power BI", level: "Básico" },
-    { skill: "Flutter", level: "Avançado" },
-    { skill: "Microsoft Office", level: "Intermediário" },
-    { skill: "Jupyter", level: "Intermediário" },
-    { skill: "Dart", level: "Avançado" },
-  ];
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [changing, setChanging] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const projects = [
-    {
-      name: "Projeto 1",
-      description: "Descrição do projeto 1",
-      github: "https://github.com/seu-usuario/projeto-1",
-    },
-  ];
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(tecnologies.map((tech) => tech.category)),
+    );
+
+    return ["All", ...uniqueCategories];
+  }, []);
+
+  const filteredTechnologies = useMemo(() => {
+    if (selectedCategory === "All") {
+      return tecnologies;
+    }
+
+    return tecnologies.filter((tech) => tech.category === selectedCategory);
+  }, [selectedCategory]);
 
   return (
     <div className="flex items-center flex-col overflow-y-hidden min-h-screen bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300">
@@ -85,10 +69,57 @@ function App() {
         </AnimatedElement>
       </div>
       <AboutMe />
-      <div className="flex flex-wrap gap-4 w-full bg-[var(--color-panel)] px-10 py-20 transition-colors duration-300">
-        {tecnologies.map((tech) => (
-          <Card key={tech.skill} skill={tech.skill} description={tech.level} />
-        ))}
+      <Carousel data={projects} />
+      <div className="flex w-full flex-col gap-6 bg-(--color-panel) px-10 py-20 transition-colors duration-300">
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => {
+                setChanging(true);
+                setTimeout(
+                  () => setSelectedCategory(category),
+                  filteredTechnologies.length * 60 + 300,
+                );
+                setTimeout(
+                  () => setChanging(false),
+                  filteredTechnologies.length * 60 + 600,
+                );
+              }}
+              className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wide uppercase transition-all duration-200 ${
+                selectedCategory === category
+                  ? "border-transparent bg-(--color-card) text-(--color-text-primary)"
+                  : "border-(--color-border-soft) bg-transparent text-(--color-text-secondary) hover:bg-(--color-surface)"
+              }`}
+            >
+              {category} -{" "}
+              {category === "All"
+                ? tecnologies.length
+                : tecnologies.filter((tech) => tech.category === category)
+                    .length}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-4">
+          {filteredTechnologies.map((tech, index) => (
+            <Card
+              changing={changing}
+              key={tech.skill}
+              index={index}
+              skill={tech.skill}
+              description={tech.level}
+              category={tech.category}
+            />
+          ))}
+        </div>
+
+        {filteredTechnologies.length === 0 && (
+          <p className="text-sm text-(--color-text-secondary)">
+            Nenhuma tecnologia encontrada para este filtro.
+          </p>
+        )}
       </div>
       <Footer />
     </div>

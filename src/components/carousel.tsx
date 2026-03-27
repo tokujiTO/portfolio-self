@@ -1,11 +1,9 @@
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
-import AnimatedElement from "./animatedElement";
 
 interface CarouselItem {
   title?: string;
   description?: string;
-  image?: string;
   place?: string;
   role?: string;
   technologies?: string[];
@@ -202,10 +200,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
   }, [datalist.length]);
 
   return (
-    <AnimatedElement
-      direction="bottom"
-      className="relative flex h-[60vh] w-full flex-col"
-    >
+    <div className="relative flex h-[80vh] w-full bg-(--color-panel) flex-col">
       <div
         ref={scrollContainerRef}
         className="scroll-container scrollbar-hide flex h-full w-full flex-row items-center justify-start gap-16 overflow-x-scroll"
@@ -314,20 +309,20 @@ export default function Carousel({ data, clickable }: CarouselProps) {
         ))}
       </div>
 
-      <div className="absolute top-1/2 z-40 flex w-full -translate-y-1/2 transform justify-between px-4">
+      <div className="absolute top-1/2 px-50 z-40 flex w-full -translate-y-1/2 transform justify-between">
         <button
           onClick={handleNext}
-          className="z-10 rounded-full bg-gray-300/30 p-2 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30"
+          className="z-10 rounded-full bg-(--color-surface) p-2 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30"
         >
-          <CaretLeft size={32} />
+          <CaretLeftIcon size={32} />
         </button>
         <button
           onClick={handlePrevious}
-          className="z-10 rounded-full bg-gray-300/30 p-2 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30"
+          className="z-10 rounded-full bg-(--color-surface) p-2 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30"
         >
-          <CaretRight size={32} />
+          <CaretRightIcon size={32} />
         </button>
       </div>
-    </AnimatedElement>
+    </div>
   );
 }

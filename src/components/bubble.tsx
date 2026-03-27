@@ -11,7 +11,7 @@ export default function Bubble() {
     if (!isExpanded) {
       setShowIcon(false);
       setTimeout(() => setIsExpanded((prev) => !prev), 100);
-      setShowCloseIcon(true);
+      setTimeout(() => setShowCloseIcon(true), 300);
     } else {
       setShowCloseIcon(false);
       setTimeout(() => setIsExpanded((prev) => !prev), 100);
@@ -42,9 +42,13 @@ export default function Bubble() {
           </span>
         )}
         {isExpanded && (
-          <span className="font-bold tracking-tighter text-sm italic">
-            Menu
-          </span>
+          <div
+            className={`flex items-center gap-2 ${showCloseIcon ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"} transition-all duration-300`}
+          >
+            <span className="font-bold tracking-tighter text-sm italic">
+              Menu
+            </span>
+          </div>
         )}
         {isExpanded && (
           <span

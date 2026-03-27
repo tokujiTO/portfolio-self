@@ -12,7 +12,7 @@ export default function Navbar() {
         type="button"
         onClick={toggleTheme}
         aria-label={`Alternar para tema ${theme === "light" ? "escuro" : "claro"}`}
-        className="h-12 px-4 flex items-center gap-2 rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border-soft)] backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
+        className="h-12 px-4 flex items-center gap-2 rounded-full bg-(--color-surface) text-(--color-text-primary) border border-(--color-border-soft) backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
       >
         {theme === "light" ? <MoonIcon size={20} /> : <SunIcon size={20} />}
         <span className="text-sm font-medium">
