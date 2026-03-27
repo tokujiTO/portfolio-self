@@ -1,9 +1,11 @@
 import AnimatedElement from "./components/animatedElement";
 import Navbar from "./components/navbar";
 import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Removed.png";
+import AboutMe from "./components/Sections/aboutMe";
+import Footer from "./components/footer";
+import Card from "./components/card";
 
 function App() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tecnologies = [
     { skill: "React", level: "Avançado" },
     { skill: "TypeScript", level: "Avançado" },
@@ -34,8 +36,17 @@ function App() {
     { skill: "Dart", level: "Avançado" },
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const projects = [
+    {
+      name: "Projeto 1",
+      description: "Descrição do projeto 1",
+      github: "https://github.com/seu-usuario/projeto-1",
+    },
+  ];
+
   return (
-    <div className="flex items-center flex-col gap-8 overflow-y-hidden min-h-screen bg-linear-to-b from-[#e5e5e5] to-[#d5d5d5]">
+    <div className="flex items-center flex-col overflow-y-hidden min-h-screen bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300">
       <Navbar />
       <div className="h-8" />
       <div className="flex relative flex-col mb-[-20vh] items-center pr-60  min-h-50 w-full px-10">
@@ -46,7 +57,11 @@ function App() {
         >
           Tiago
         </AnimatedElement>
-        <img src={photo} alt="Profile" className="w-1/2 z-10 rounded-b-full" />
+        <img
+          src={photo}
+          alt="Profile"
+          className="w-1/2 shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] z-10 rounded-b-full"
+        />
         <AnimatedElement
           className="text-[16vh] absolute italic top-1/3 left-1/2 font-bold"
           direction="right"
@@ -54,25 +69,28 @@ function App() {
         >
           Massuda
         </AnimatedElement>
+        <AnimatedElement
+          className="text-[3vh] flex absolute italic top-11/20 left-3/5 font-bold"
+          direction="bottom"
+        >
+          <AnimatedElement className="flex" direction="bottom" delay={100}>
+            Cloud Specialist
+          </AnimatedElement>{" "}
+          <AnimatedElement className="flex" direction="bottom" delay={200}>
+            Software Developer
+          </AnimatedElement>{" "}
+          <AnimatedElement className="flex" direction="bottom" delay={300}>
+            Cybersecurity Enthusiast
+          </AnimatedElement>
+        </AnimatedElement>
       </div>
-      <div className="flex flex-col text-white rounded-tr-[30%] px-80 pt-60 gap-8 bg-[#3c3c3c] mt-[-90hv] w-full py-20">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="flex justify-center items-center gap-4">
-            <AnimatedElement>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eaque
-              vitae veniam voluptate architecto temporibus laborum quis nulla
-              totam, suscipit ex placeat. Ad repellat eveniet, hic vitae sunt
-              quibusdam earum impedit.
-            </AnimatedElement>
-            <AnimatedElement direction="right" delay={200}>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Eaque
-              vitae veniam voluptate architecto temporibus laborum quis nulla
-              totam, suscipit ex placeat. Ad repellat eveniet, hic vitae sunt
-              quibusdam earum impedit.
-            </AnimatedElement>
-          </div>
+      <AboutMe />
+      <div className="flex flex-wrap gap-4 w-full bg-[var(--color-panel)] px-10 py-20 transition-colors duration-300">
+        {tecnologies.map((tech) => (
+          <Card key={tech.skill} skill={tech.skill} description={tech.level} />
         ))}
       </div>
+      <Footer />
     </div>
   );
 }
