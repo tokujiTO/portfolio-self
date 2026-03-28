@@ -19,7 +19,7 @@ export default function Card({
 
   return (
     <div
-      className={`flex w-full min-h-10 p-4 sm:w-auto sm:min-w-30 hover:scale-105 hover:shadow-2xl duration-75 transition-all hover:cursor-pointer ${changing ? "translate-y-10 opacity-0" : "translate-y-0 opacity-100"} flex-col gap-1 bg-(--color-card) text-(--color-text-primary) rounded-2xl border border-(--color-border-soft)`}
+      className={`flex w-full min-h-10 p-4 sm:w-auto sm:min-w-30 hover:scale-105 hover:shadow-2xl duration-100 transition-all hover:cursor-pointer ${changing ? "translate-y-10 opacity-0" : "translate-y-0 opacity-100"} flex-col gap-1 bg-(--color-card) text-(--color-text-primary) rounded-2xl border border-(--color-border-soft)`}
       style={{ transitionDelay: `${index * 28}ms` }}
     >
       {category && (

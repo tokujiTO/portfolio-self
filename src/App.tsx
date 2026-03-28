@@ -107,11 +107,15 @@ function App() {
         </AnimatedElement>
       </div>
       <AboutMe />
+      {/* <div
+        id="projects"
+        className="w-full flex flex-col  border-t-20 border-b-20 border-(--color-panel) border-dashed  items-center py-14  md:py-16 lg:py-20 transition-colors duration-300 bg-radial from-(--color-text-secondary) to-(--color-text-tertiary) "
+      > */}
       <div
         id="projects"
-        className="w-full flex flex-col items-center  py-14  md:py-16 lg:py-20 transition-colors duration-300 bg-(--color-panel)"
+        className="w-full flex flex-col  border-t-20 border-b-20 border-(--color-panel) border-double  items-center py-14  md:py-16 lg:py-20 transition-colors duration-300 bg-radial from-(--color-text-secondary) to-(--color-text-tertiary) "
       >
-        <h1 className="mt-2 w-full text-center text-3xl font-bold sm:text-4xl">
+        <h1 className="mt-2 w-full text-center text-3xl text-(--color-text-secondary-reversed) font-bold sm:text-4xl">
           {language === "pt" ? "Meus Principais Projetos" : "My Main Projects"}
         </h1>
         <Carousel data={projects} />
@@ -120,6 +124,9 @@ function App() {
         id="technologies"
         className="flex w-full flex-col gap-6 bg-(--color-panel) px-4 py-14 sm:px-8 md:px-12 md:py-16 lg:px-20 lg:py-20 transition-colors duration-300"
       >
+        <h1 className="mt-2 w-full text-center text-3xl text-(--color-text-secondary) font-bold sm:text-4xl">
+          {language === "pt" ? "Minhas Tecnologias" : "My Technologies"}
+        </h1>
         <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
             <button
@@ -129,11 +136,11 @@ function App() {
                 setChanging(true);
                 setTimeout(
                   () => setSelectedCategory(category),
-                  filteredTechnologies.length * 30,
+                  filteredTechnologies.length * 30 + 100,
                 );
                 setTimeout(
                   () => setChanging(false),
-                  filteredTechnologies.length * 30,
+                  filteredTechnologies.length * 30 + 150,
                 );
               }}
               className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wide uppercase transition-all duration-200 ${

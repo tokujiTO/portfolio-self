@@ -204,7 +204,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
   return (
     <div
       id="projects"
-      className="relative flex h-[68vh] w-full flex-col bg-(--color-panel) sm:h-[72vh] lg:h-[80vh]"
+      className="relative flex h-[68vh] w-full flex-col sm:h-[72vh] lg:h-[80vh]"
     >
       <div
         ref={scrollContainerRef}
