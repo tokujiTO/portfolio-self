@@ -6,36 +6,70 @@ import AboutMe from "./components/Sections/aboutMe";
 import Footer from "./components/footer";
 import Card from "./components/card";
 import Carousel from "./components/carousel";
-import { projects } from "./assets/projects";
-import { tecnologies } from "./assets/tecnologies";
+import { getProjects } from "./assets/projects";
+import {
+  getCategoryLabel,
+  getTechnologies,
+  type TechnologyCategoryKey,
+} from "./assets/tecnologies";
+import { useLanguage } from "./context/languageContext";
+
+type CategoryFilter = "all" | TechnologyCategoryKey;
+
+const allLabelByLanguage = {
+  pt: "Todos",
+  en: "All",
+};
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const { language } = useLanguage();
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryFilter>("all");
   const [changing, setChanging] = useState(false);
+  const projects = useMemo(() => getProjects(language), [language]);
+  const technologies = useMemo(() => getTechnologies(language), [language]);
 
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(
-      new Set(tecnologies.map((tech) => tech.category)),
+      new Set(technologies.map((tech) => tech.categoryKey)),
     );
 
-    return ["All", ...uniqueCategories];
-  }, []);
+    return ["all", ...uniqueCategories] as CategoryFilter[];
+  }, [technologies]);
 
   const filteredTechnologies = useMemo(() => {
-    if (selectedCategory === "All") {
-      return tecnologies;
+    if (selectedCategory === "all") {
+      return technologies;
     }
 
-    return tecnologies.filter((tech) => tech.category === selectedCategory);
-  }, [selectedCategory]);
+    return technologies.filter((tech) => tech.categoryKey === selectedCategory);
+  }, [selectedCategory, technologies]);
 
   return (
-    <div className="flex items-center flex-col overflow-y-hidden min-h-screen bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300">
+    <div className="i18n-content flex min-h-screen flex-col items-center overflow-x-hidden bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300">
       <Navbar />
-      <div className="h-8" />
-      <div className="flex relative flex-col mb-[-20vh] items-center pr-60  min-h-50 w-full px-10">
+      <div className="h-20 " />
+      <div className="relative flex w-full flex-col items-center px-4 pb-12 md:mb-[-24vh]  sm:px-8 md:px-12 md:pb-20 lg:px-10">
+        <div className="mb-4 flex flex-col items-center text-center md:hidden">
+          {/* Mobile */}
+          <AnimatedElement
+            className="text-[clamp(2.4rem,13vw,4.5rem)]  italic font-bold leading-none"
+            direction="left"
+            delay={200}
+          >
+            Tiago
+          </AnimatedElement>
+          <AnimatedElement
+            className="text-[clamp(2.4rem,13vw,4.5rem)] italic font-bold leading-none"
+            direction="right"
+            delay={350}
+          >
+            Massuda
+          </AnimatedElement>
+        </div>
+        {/* >= a tablet */}
         <AnimatedElement
-          className="text-[16vh] absolute italic top-1/5 left-1/3 -translate-x-[74%] font-bold"
+          className="absolute lg:left-[40%] top-[12%] hidden -translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold md:block"
           direction="left"
           delay={200}
         >
@@ -43,34 +77,49 @@ function App() {
         </AnimatedElement>
         <img
           src={photo}
-          alt="Profile"
-          className="w-1/2 shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] z-10 rounded-b-full"
+          alt={language === "pt" ? "Perfil" : "Profile"}
+          className="z-10 w-[78%] max-w-88 rounded-b-full shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] sm:w-[62%] md:w-[48%] md:max-w-none lg:w-2/5 md:mr-40 lg:mr-50"
         />
         <AnimatedElement
-          className="text-[16vh] absolute italic top-1/3 left-1/2 font-bold"
+          className="absolute left-1/2  top-[28%] hidden text-[clamp(4rem,12vw,18vh)] italic font-bold md:block"
           direction="right"
           delay={400}
         >
           Massuda
         </AnimatedElement>
         <AnimatedElement
-          className="text-[3vh] flex absolute italic top-11/20 left-3/5 font-bold"
+          className="mt-6 flex flex-col items-center gap-1 text-center text-base italic font-bold sm:text-lg md:absolute md:left-[60%] md:top-[50%] md:mt-0 md:items-start md:text-[2.7vh]"
           direction="bottom"
         >
           <AnimatedElement className="flex" direction="bottom" delay={100}>
-            Cloud Specialist
+            {language === "pt" ? "Especialista em Cloud" : "Cloud Specialist"}
           </AnimatedElement>{" "}
           <AnimatedElement className="flex" direction="bottom" delay={200}>
-            Software Developer
+            {language === "pt"
+              ? "Desenvolvedor de Software"
+              : "Software Developer"}
           </AnimatedElement>{" "}
           <AnimatedElement className="flex" direction="bottom" delay={300}>
-            Cybersecurity Enthusiast
+            {language === "pt"
+              ? "Entusiasta de Cibersegurança"
+              : "Cybersecurity Enthusiast"}
           </AnimatedElement>
         </AnimatedElement>
       </div>
       <AboutMe />
-      <Carousel data={projects} />
-      <div className="flex w-full flex-col gap-6 bg-(--color-panel) px-10 py-20 transition-colors duration-300">
+      <div
+        id="projects"
+        className="w-full flex flex-col items-center  py-14  md:py-16 lg:py-20 transition-colors duration-300 bg-(--color-panel)"
+      >
+        <h1 className="mt-2 w-full text-center text-3xl font-bold sm:text-4xl">
+          {language === "pt" ? "Meus Principais Projetos" : "My Main Projects"}
+        </h1>
+        <Carousel data={projects} />
+      </div>
+      <div
+        id="technologies"
+        className="flex w-full flex-col gap-6 bg-(--color-panel) px-4 py-14 sm:px-8 md:px-12 md:py-16 lg:px-20 lg:py-20 transition-colors duration-300"
+      >
         <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
             <button
@@ -80,11 +129,11 @@ function App() {
                 setChanging(true);
                 setTimeout(
                   () => setSelectedCategory(category),
-                  filteredTechnologies.length * 60 + 300,
+                  filteredTechnologies.length * 30,
                 );
                 setTimeout(
                   () => setChanging(false),
-                  filteredTechnologies.length * 60 + 600,
+                  filteredTechnologies.length * 30,
                 );
               }}
               className={`rounded-full border px-3 py-1 text-xs font-semibold tracking-wide uppercase transition-all duration-200 ${
@@ -93,10 +142,13 @@ function App() {
                   : "border-(--color-border-soft) bg-transparent text-(--color-text-secondary) hover:bg-(--color-surface)"
               }`}
             >
-              {category} -{" "}
-              {category === "All"
-                ? tecnologies.length
-                : tecnologies.filter((tech) => tech.category === category)
+              {category === "all"
+                ? allLabelByLanguage[language]
+                : getCategoryLabel(language, category)}{" "}
+              -{" "}
+              {category === "all"
+                ? technologies.length
+                : technologies.filter((tech) => tech.categoryKey === category)
                     .length}
             </button>
           ))}
@@ -117,7 +169,9 @@ function App() {
 
         {filteredTechnologies.length === 0 && (
           <p className="text-sm text-(--color-text-secondary)">
-            Nenhuma tecnologia encontrada para este filtro.
+            {language === "pt"
+              ? "Nenhuma tecnologia encontrada para este filtro."
+              : "No technologies found for this filter."}
           </p>
         )}
       </div>

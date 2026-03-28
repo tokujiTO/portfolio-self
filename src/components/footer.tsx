@@ -3,10 +3,16 @@ import {
   GithubLogoIcon,
   LinkedinLogoIcon,
 } from "@phosphor-icons/react";
+import { useLanguage } from "../context/languageContext";
 
 const Footer = () => {
+  const { language } = useLanguage();
+
   return (
-    <footer className="bg-(--color-footer) text-(--color-text-tertiary) py-12 w-full px-8 shadow-xl z-10 transition-colors duration-300">
+    <footer
+      id="contact"
+      className="z-10 w-full bg-(--color-footer) px-4 py-10 text-(--color-text-tertiary) shadow-xl transition-colors duration-300 sm:px-6 md:px-8 md:py-12"
+    >
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
         {/* Lado Esquerdo: Identidade */}
         <div className="text-center md:text-left">
@@ -14,19 +20,20 @@ const Footer = () => {
             TIAGO MASSUDA
           </h2>
           <p className="text-sm max-w-xs">
-            Desenvolvendo soluções escaláveis em Cloud e interfaces modernas com
-            React e Flutter.
+            {language === "pt"
+              ? "Desenvolvendo soluções escaláveis em Cloud e interfaces modernas com React e Flutter."
+              : "Building scalable cloud solutions and modern interfaces with React and Flutter."}
           </p>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex gap-5 sm:gap-6">
           <a
             href="https://github.com/tokujiTO"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition-colors"
           >
-            <GithubLogoIcon size={32} />
+            <GithubLogoIcon size={28} />
           </a>
           <a
             href="https://linkedin.com/in/tiago-tokugi-massuda"
@@ -34,13 +41,13 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-white transition-colors"
           >
-            <LinkedinLogoIcon size={32} />
+            <LinkedinLogoIcon size={28} />
           </a>
           <a
             href="mailto:tiagomassuda123@gmail.com"
             className="hover:text-white transition-colors"
           >
-            <EnvelopeSimpleIcon size={32} />
+            <EnvelopeSimpleIcon size={28} />
           </a>
         </div>
 
@@ -59,7 +66,11 @@ const Footer = () => {
 
       {/* Linha Final */}
       <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-(--color-text-secondary) flex flex-col md:flex-row justify-between items-center text-[11px] uppercase tracking-widest">
-        <p className="mt-4 md:mt-0 opacity-50">Built with React & Passion</p>
+        <p className="mt-4 md:mt-0 opacity-50">
+          {language === "pt"
+            ? "Construído com React e paixão"
+            : "Built with React and passion"}
+        </p>
       </div>
     </footer>
   );

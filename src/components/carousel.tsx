@@ -1,5 +1,6 @@
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "../context/languageContext";
 
 interface CarouselItem {
   title?: string;
@@ -20,6 +21,7 @@ interface CarouselProps {
 }
 
 export default function Carousel({ data, clickable }: CarouselProps) {
+  const { language } = useLanguage();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [cardPositions, setCardPositions] = useState<number[]>([]);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -200,10 +202,13 @@ export default function Carousel({ data, clickable }: CarouselProps) {
   }, [datalist.length]);
 
   return (
-    <div className="relative flex h-[80vh] w-full bg-(--color-panel) flex-col">
+    <div
+      id="projects"
+      className="relative flex h-[68vh] w-full flex-col bg-(--color-panel) sm:h-[72vh] lg:h-[80vh]"
+    >
       <div
         ref={scrollContainerRef}
-        className="scroll-container scrollbar-hide flex h-full w-full flex-row items-center justify-start gap-16 overflow-x-scroll"
+        className="scroll-container scrollbar-hide flex h-full w-full flex-row items-center justify-start gap-6 overflow-x-scroll sm:gap-10 lg:gap-16"
         style={{
           paddingLeft: `${Math.max(16, containerWidth / 2 - cardHalfWidth)}px`,
           paddingRight: `${Math.max(16, containerWidth / 2 - cardHalfWidth)}px`,
@@ -212,7 +217,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
         {datalist.map((item, index) => (
           <div
             key={index}
-            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-96 max-w-[20rem] min-w-[20rem] flex-col rounded-xl bg-(--color-card) p-5 shadow-lg transition-transform duration-75 ease-in-out lg:max-w-[24rem] lg:min-w-[24rem] lg:rounded-lg`}
+            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)] flex-col rounded-xl bg-(--color-card) p-4 shadow-lg transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
             style={{
               transform: `scale(${calculateScale(index)})`,
               opacity: 0.5 + (calculateScale(index) - 0.8) / 0.8,
@@ -246,9 +251,13 @@ export default function Carousel({ data, clickable }: CarouselProps) {
 
               {(item.place || item.role) && (
                 <p className="text-xs italic text-(--color-text-primary)/70 lg:text-sm">
-                  {item.place ? `Place: ${item.place}` : ""}
+                  {item.place
+                    ? `${language === "pt" ? "Local" : "Place"}: ${item.place}`
+                    : ""}
                   {item.place && item.role ? " | " : ""}
-                  {item.role ? `Role: ${item.role}` : ""}
+                  {item.role
+                    ? `${language === "pt" ? "Função" : "Role"}: ${item.role}`
+                    : ""}
                 </p>
               )}
 
@@ -274,7 +283,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
                     onClick={(event) => event.stopPropagation()}
                     className="rounded-md bg-(--color-surface) px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
                   >
-                    Front Repo
+                    {language === "pt" ? "Repo Front" : "Front Repo"}
                   </a>
                 )}
 
@@ -286,7 +295,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
                     onClick={(event) => event.stopPropagation()}
                     className="rounded-md bg-(--color-surface) px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
                   >
-                    Back Repo
+                    {language === "pt" ? "Repo Back" : "Back Repo"}
                   </a>
                 )}
 
@@ -300,7 +309,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
                       onClick={(event) => event.stopPropagation()}
                       className="rounded-md bg-(--color-surface) px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
                     >
-                      Repository
+                      {language === "pt" ? "Repositório" : "Repository"}
                     </a>
                   )}
               </div>
@@ -309,18 +318,18 @@ export default function Carousel({ data, clickable }: CarouselProps) {
         ))}
       </div>
 
-      <div className="absolute top-1/2 px-50 z-40 flex w-full -translate-y-1/2 transform justify-between">
+      <div className="absolute top-1/2 z-40 hidden w-full -translate-y-1/2 transform justify-between px-4 sm:flex sm:px-6 lg:px-10">
         <button
           onClick={handleNext}
-          className="z-10 rounded-full bg-(--color-surface) p-2 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30"
+          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30 sm:p-2"
         >
-          <CaretLeftIcon size={32} />
+          <CaretLeftIcon size={28} />
         </button>
         <button
           onClick={handlePrevious}
-          className="z-10 rounded-full bg-(--color-surface) p-2 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30"
+          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30 sm:p-2"
         >
-          <CaretRightIcon size={32} />
+          <CaretRightIcon size={28} />
         </button>
       </div>
     </div>
