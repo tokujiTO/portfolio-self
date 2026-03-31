@@ -217,7 +217,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
         {datalist.map((item, index) => (
           <div
             key={index}
-            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)] flex-col rounded-xl bg-(--color-card) p-4 shadow-lg transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
+            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)]  shadow-(--color-text-secondary) flex-col rounded-xl bg-(--color-text-secondary-reversed) p-4 transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
             style={{
               transform: `scale(${calculateScale(index)})`,
               opacity: 0.5 + (calculateScale(index) - 0.8) / 0.8,
@@ -238,19 +238,19 @@ export default function Carousel({ data, clickable }: CarouselProps) {
               openLink(item.linkedin);
             }}
           >
-            <div className="flex h-full flex-col gap-3 text-(--color-text-primary)">
+            <div className="flex h-full flex-col gap-3 text-(--color-text-secondary)">
               <h2 className="text-lg font-bold leading-tight lg:text-xl">
                 {item.title || item.name}
               </h2>
 
               {item.description && (
-                <p className="line-clamp-3 text-sm text-(--color-text-primary)/80 lg:text-base">
+                <p className="line-clamp-3 text-sm text-(--color-text-secondary)/80 lg:text-base">
                   {item.description}
                 </p>
               )}
 
               {(item.place || item.role) && (
-                <p className="text-xs italic text-(--color-text-primary)/70 lg:text-sm">
+                <p className="text-xs italic text-(--color-text-secondary)/70 lg:text-sm">
                   {item.place
                     ? `${language === "pt" ? "Local" : "Place"}: ${item.place}`
                     : ""}
@@ -281,7 +281,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(event) => event.stopPropagation()}
-                    className="rounded-md bg-(--color-surface) px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
+                    className="rounded-md bg-(--color-surface) border-2 border-(--color-text-secondary) border-dashed px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
                   >
                     {language === "pt" ? "Repo Front" : "Front Repo"}
                   </a>
@@ -293,7 +293,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(event) => event.stopPropagation()}
-                    className="rounded-md bg-(--color-surface) px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
+                    className="rounded-md bg-(--color-surface) border-2 border-(--color-text-secondary) border-dashed px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
                   >
                     {language === "pt" ? "Repo Back" : "Back Repo"}
                   </a>
@@ -307,7 +307,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(event) => event.stopPropagation()}
-                      className="rounded-md bg-(--color-surface) px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
+                      className="rounded-md bg-(--color-surface) border-2 border-(--color-text-secondary) border-dashed px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
                     >
                       {language === "pt" ? "Repositório" : "Repository"}
                     </a>

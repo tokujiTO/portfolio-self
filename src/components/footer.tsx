@@ -11,7 +11,7 @@ const Footer = () => {
   return (
     <footer
       id="contact"
-      className="z-10 w-full bg-(--color-footer) px-4 py-10 text-(--color-text-tertiary) shadow-xl transition-colors duration-300 sm:px-6 md:px-8 md:py-12"
+      className="z-10 w-full bg-(--color-footer) px-4 py-10 border-t-16 border-double border-(--color-panel) text-(--color-text-tertiary) shadow-xl transition-colors duration-300 sm:px-6 md:px-8 md:py-12"
     >
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
         {/* Lado Esquerdo: Identidade */}

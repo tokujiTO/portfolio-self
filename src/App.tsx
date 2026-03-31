@@ -1,10 +1,20 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedElement from "./components/animatedElement";
 import Navbar from "./components/navbar";
 import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Removed.png";
 import AboutMe from "./components/Sections/aboutMe";
 import Footer from "./components/footer";
 import Card from "./components/card";
+import background from "./assets/background.png";
+import {
+  motion,
+  useMotionValue,
+  useMotionTemplate,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import Carousel from "./components/carousel";
 import { getProjects } from "./assets/projects";
 import {
@@ -23,6 +33,88 @@ const allLabelByLanguage = {
 
 function App() {
   const { language } = useLanguage();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+  const [isWideScreen, setIsWideScreen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth > 640,
+  );
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start end", "end start"],
+  });
+
+  const springX = useSpring(pointerX, {
+    stiffness: 140,
+    damping: 18,
+    mass: 0.2,
+  });
+  const springY = useSpring(pointerY, {
+    stiffness: 140,
+    damping: 18,
+    mass: 0.2,
+  });
+
+  const tiagoX = useTransform(springX, (value) => value * 24);
+  const tiagoY = useTransform(springY, (value) => value * 12);
+  const tiagoScrollExitX = useTransform(scrollYProgress, [0.44, 1], [0, -300]);
+  const massudaX = useTransform(springX, (value) => value * -26);
+  const massudaY = useTransform(springY, (value) => value * 14);
+  const massudaScrollExitX = useTransform(scrollYProgress, [0.46, 1], [0, 300]);
+  const imageX = useTransform(springX, (value) => value * -16);
+  const imageY = useTransform(springY, (value) => value * -10);
+  const imageRotate = useTransform(springX, (value) => value * 2.5);
+
+  const scrollDriftX = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [-0.3, 0, 0.3],
+  );
+  const scrollLiftY = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [0.5, 0, -0.5],
+  );
+
+  const tiagoXScroll = useTransform(scrollDriftX, (value) => value * 30);
+  const tiagoYScroll = useTransform(scrollLiftY, (value) => value * 22);
+  const massudaXScroll = useTransform(scrollDriftX, (value) => value * -34);
+  const massudaYScroll = useTransform(scrollLiftY, (value) => value * 24);
+  const imageXScroll = useTransform(scrollDriftX, (value) => value * -20);
+  const imageYScroll = useTransform(scrollLiftY, (value) => value * -28);
+
+  const tiagoXCombined = useTransform(
+    () => tiagoX.get() + tiagoXScroll.get() + tiagoScrollExitX.get(),
+  );
+  const tiagoYCombined = useTransform(() => tiagoY.get() + tiagoYScroll.get());
+
+  const massudaXCombined = useTransform(
+    () => massudaX.get() + massudaXScroll.get() + massudaScrollExitX.get(),
+  );
+  const massudaYCombined = useTransform(
+    () => massudaY.get() + massudaYScroll.get(),
+  );
+  const imageXCombined = useTransform(() => imageX.get() + imageXScroll.get());
+  const imageYCombined = useTransform(() => imageY.get() + imageYScroll.get());
+  const backgroundPosX = useTransform(springX, (value) => 50 + value * 4);
+  const backgroundPosY = useTransform(springY, (value) => 50 + value * 3);
+  const backgroundPosition = useMotionTemplate`${backgroundPosX}% ${backgroundPosY}%`;
+  const isParallaxEnabled = !shouldReduceMotion && isWideScreen;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth > 640);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("all");
   const [changing, setChanging] = useState(false);
@@ -45,50 +137,117 @@ function App() {
     return technologies.filter((tech) => tech.categoryKey === selectedCategory);
   }, [selectedCategory, technologies]);
 
+  const handlePageMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isParallaxEnabled) {
+      return;
+    }
+
+    const halfWidth = window.innerWidth / 2;
+    const halfHeight = window.innerHeight / 2;
+    const normalizedX = (event.clientX - halfWidth) / halfWidth;
+    const normalizedY = (event.clientY - halfHeight) / halfHeight;
+
+    pointerX.set(Math.max(-1, Math.min(1, normalizedX)));
+    pointerY.set(Math.max(-1, Math.min(1, normalizedY)));
+  };
+
+  const handlePageMouseLeave = () => {
+    pointerX.set(0);
+    pointerY.set(0);
+  };
+
   return (
-    <div className="i18n-content flex min-h-screen flex-col items-center overflow-x-hidden bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300">
+    <motion.div
+      className="i18n-content flex min-h-screen flex-col items-center overflow-x-hidden bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300"
+      style={{
+        // background image only on large screens
+        backgroundImage:
+          window.innerWidth > 640 ? `url(${background})` : undefined,
+        backgroundSize: "30vw",
+        backgroundPosition: isParallaxEnabled ? backgroundPosition : "50% 50%",
+        backgroundRepeat: "repeat",
+        imageRendering: "pixelated",
+      }}
+      onMouseMove={handlePageMouseMove}
+      onMouseLeave={handlePageMouseLeave}
+    >
       <Navbar />
       <div className="h-20 " />
-      <div className="relative flex w-full flex-col items-center px-4 pb-12 md:mb-[-24vh]  sm:px-8 md:px-12 md:pb-20 lg:px-10">
-        <div className="mb-4 flex flex-col items-center text-center md:hidden">
+      <div
+        ref={heroRef}
+        className="relative z-0 flex w-full flex-col items-center px-4 pb-12 sm:px-8 md:mb-[-24vh] md:px-12 md:pb-20 lg:px-10"
+      >
+        <motion.div
+          className="mb-4 flex flex-col items-center text-center md:hidden"
+          style={
+            isParallaxEnabled
+              ? { x: tiagoXCombined, y: tiagoYCombined }
+              : undefined
+          }
+        >
           {/* Mobile */}
           <AnimatedElement
-            className="text-[clamp(2.4rem,13vw,4.5rem)]  italic font-bold leading-none"
+            className="text-[clamp(2.4rem,13vw,4.5rem)]  italic font-bold text-(--color-text-secondary) leading-none"
             direction="left"
             delay={200}
           >
             Tiago
           </AnimatedElement>
           <AnimatedElement
-            className="text-[clamp(2.4rem,13vw,4.5rem)] italic font-bold leading-none"
+            className="text-[clamp(2.4rem,13vw,4.5rem)] italic font-bold text-(--color-text-secondary) leading-none"
             direction="right"
             delay={350}
           >
             Massuda
           </AnimatedElement>
-        </div>
+        </motion.div>
         {/* >= a tablet */}
-        <AnimatedElement
-          className="absolute lg:left-[40%] top-[12%] hidden -translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold md:block"
-          direction="left"
-          delay={200}
+        <motion.div
+          className="absolute top-[12%] hidden lg:left-[40%] md:block"
+          style={
+            isParallaxEnabled
+              ? { x: tiagoXCombined, y: tiagoYCombined }
+              : undefined
+          }
         >
-          Tiago
-        </AnimatedElement>
-        <img
+          <motion.div className="-translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)">
+            <AnimatedElement
+              className={`text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary) `}
+              direction="left"
+              delay={200}
+            >
+              Tiago
+            </AnimatedElement>
+          </motion.div>
+        </motion.div>
+        <motion.img
           src={photo}
           alt={language === "pt" ? "Perfil" : "Profile"}
-          className="z-10 w-[78%] max-w-88 rounded-b-full shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] sm:w-[62%] md:w-[48%] md:max-w-none lg:w-2/5 md:mr-40 lg:mr-50"
+          className="z-10 w-[78%] max-w-88 rounded-b-full shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] sm:w-[62%] md:mr-40 md:w-[48%] md:max-w-none lg:mr-50 lg:w-2/5"
+          style={
+            isParallaxEnabled
+              ? { x: imageXCombined, y: imageYCombined, rotateZ: imageRotate }
+              : undefined
+          }
         />
-        <AnimatedElement
-          className="absolute left-1/2  top-[28%] hidden text-[clamp(4rem,12vw,18vh)] italic font-bold md:block"
-          direction="right"
-          delay={400}
+        <motion.div
+          className="absolute left-1/2 top-[28%] hidden md:block"
+          style={
+            isParallaxEnabled
+              ? { x: massudaXCombined, y: massudaYCombined }
+              : undefined
+          }
         >
-          Massuda
-        </AnimatedElement>
+          <AnimatedElement
+            className="text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)"
+            direction="right"
+            delay={400}
+          >
+            Massuda
+          </AnimatedElement>
+        </motion.div>
         <AnimatedElement
-          className="mt-6 flex flex-col items-center gap-1 text-center text-base italic font-bold sm:text-lg md:absolute md:left-[60%] md:top-[50%] md:mt-0 md:items-start md:text-[2.7vh]"
+          className="mt-6 flex flex-col items-center gap-1 text-(--color-text-secondary) text-center text-base italic font-bold sm:text-lg md:absolute md:left-[60%] md:top-[50%] md:mt-0 md:items-start md:text-[2.7vh]"
           direction="bottom"
         >
           <AnimatedElement className="flex" direction="bottom" delay={100}>
@@ -113,9 +272,9 @@ function App() {
       > */}
       <div
         id="projects"
-        className="w-full flex flex-col  border-t-20 border-b-20 border-(--color-panel) border-double  items-center py-14  md:py-16 lg:py-20 transition-colors duration-300 bg-radial from-(--color-text-secondary) to-(--color-text-tertiary) "
+        className="w-full flex flex-col  border-t-20 border-b-20 border-(--color-panel) border-double  items-center py-14  md:py-16 lg:py-20 transition-colors duration-300 bg-(--color-bg-main) "
       >
-        <h1 className="mt-2 w-full text-center text-3xl text-(--color-text-secondary-reversed) font-bold sm:text-4xl">
+        <h1 className="mt-2 w-full text-center text-3xl text-(--color-text-secondary) font-bold sm:text-4xl">
           {language === "pt" ? "Meus Principais Projetos" : "My Main Projects"}
         </h1>
         <Carousel data={projects} />
@@ -183,7 +342,7 @@ function App() {
         )}
       </div>
       <Footer />
-    </div>
+    </motion.div>
   );
 }
 
