@@ -71,7 +71,7 @@ export default function Bubble() {
         className={`
         ${isExpanded ? "w-full z-50 h-[60vh]  justify-between" : "w-12 justify-center"}
         h-12 flex items-center
-        delay-100 flex-col
+        delay-100 flex-col relative
         px-3 sm:p-4 bg-(--color-surface) backdrop-blur-md shadow-lg rounded-2xl border border-(--color-border-soft)
         cursor-pointer sm:text-lg text-(--color-text-primary)
         transition-all duration-500 ease-in-out overflow-hidden
@@ -176,7 +176,7 @@ export default function Bubble() {
           )}
           {isExpanded && (
             <span
-              className={`font-bold tracking-tighter duration-300 transition-all text-xs sm:text-sm ${showCloseIcon ? "opacity-100 translate-x-0 " : "opacity-0 -translate-x-20"} italic`}
+              className={`font-bold absolute left-7/9 top-10 -translate-x-full tracking-tighter duration-300 transition-all text-xs sm:text-sm ${showCloseIcon ? "opacity-100 translate-x-0 " : "opacity-0 -translate-x-20"} italic`}
               onClick={expand}
             >
               <ArrowLineLeftIcon size={32} />

@@ -7,7 +7,7 @@ export default function AboutMe() {
   return (
     <div
       id="about"
-      className="flex w-full flex-col gap-10 rounded-tr-[18%] bg-(--color-panel) px-4 py-14 pt-28 text-(--color-text-secondary) transition-colors duration-300 sm:px-8 md:rounded-tr-[24%] md:px-12 md:py-16 md:pt-40 lg:gap-12 lg:px-20 lg:py-20 lg:pt-48"
+      className="flex w-full flex-col gap-10 border-t-10 border-double border-t-(--color-text-secondary) rounded-tr-[18%] bg-(--color-panel) px-4 py-14 pt-28 text-(--color-text-secondary) transition-colors duration-300 sm:px-8 md:rounded-tr-[24%] md:px-12 md:py-16 md:pt-40 lg:gap-12 lg:px-20 lg:py-20 lg:pt-48"
     >
       <div className="flex min-h-[34vh] w-full flex-col items-center justify-center text-center md:min-h-[42vh]">
         <h1 className=" text-center text-xl font-bold italic leading-snug sm:text-2xl md:text-3xl">
