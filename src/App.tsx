@@ -5,6 +5,7 @@ import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Remo
 import AboutMe from "./components/Sections/aboutMe";
 import Footer from "./components/footer";
 import Card from "./components/card";
+import background from "./assets/background.png";
 import {
   motion,
   useMotionValue,
@@ -53,8 +54,10 @@ function App() {
 
   const tiagoX = useTransform(springX, (value) => value * 24);
   const tiagoY = useTransform(springY, (value) => value * 12);
+  const tiagoScrollExitX = useTransform(scrollYProgress, [0.44, 1], [0, -300]);
   const massudaX = useTransform(springX, (value) => value * -26);
   const massudaY = useTransform(springY, (value) => value * 14);
+  const massudaScrollExitX = useTransform(scrollYProgress, [0.46, 1], [0, 300]);
   const imageX = useTransform(springX, (value) => value * -16);
   const imageY = useTransform(springY, (value) => value * -10);
   const imageRotate = useTransform(springX, (value) => value * 2.5);
@@ -77,10 +80,13 @@ function App() {
   const imageXScroll = useTransform(scrollDriftX, (value) => value * -20);
   const imageYScroll = useTransform(scrollLiftY, (value) => value * -28);
 
-  const tiagoXCombined = useTransform(() => tiagoX.get() + tiagoXScroll.get());
+  const tiagoXCombined = useTransform(
+    () => tiagoX.get() + tiagoXScroll.get() + tiagoScrollExitX.get(),
+  );
   const tiagoYCombined = useTransform(() => tiagoY.get() + tiagoYScroll.get());
+
   const massudaXCombined = useTransform(
-    () => massudaX.get() + massudaXScroll.get(),
+    () => massudaX.get() + massudaXScroll.get() + massudaScrollExitX.get(),
   );
   const massudaYCombined = useTransform(
     () => massudaY.get() + massudaYScroll.get(),
@@ -134,13 +140,10 @@ function App() {
     <div
       className="i18n-content flex min-h-screen flex-col items-center overflow-x-hidden bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300"
       style={{
-        // Combinamos a textura (pontos) com o degradê de fundo
-        backgroundImage: `
-          radial-gradient(var(--color-text-secondary) 1px, transparent 0.8px), 
-          linear-gradient(to bottom, var(--color-bg-main-from), var(--color-bg-main-to))
-        `,
-        backgroundSize: "32px 32px, 100% 100%",
-        backgroundAttachment: "fixed",
+        backgroundImage: `url(${background})`,
+        backgroundSize: "30vw",
+        backgroundRepeat: "repeat",
+        imageRendering: "pixelated",
       }}
     >
       <Navbar />
@@ -184,13 +187,22 @@ function App() {
               : { x: tiagoXCombined, y: tiagoYCombined }
           }
         >
-          <AnimatedElement
+          <motion.div
             className="-translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)"
-            direction="left"
-            delay={200}
+            style={
+              shouldReduceMotion
+                ? undefined
+                : { x: tiagoXCombined, y: tiagoYCombined }
+            }
           >
-            Tiago
-          </AnimatedElement>
+            <AnimatedElement
+              className={`text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary) `}
+              direction="left"
+              delay={200}
+            >
+              Tiago
+            </AnimatedElement>
+          </motion.div>
         </motion.div>
         <motion.img
           src={photo}
