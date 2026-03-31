@@ -1,10 +1,18 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import AnimatedElement from "./components/animatedElement";
 import Navbar from "./components/navbar";
 import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Removed.png";
 import AboutMe from "./components/Sections/aboutMe";
 import Footer from "./components/footer";
 import Card from "./components/card";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import Carousel from "./components/carousel";
 import { getProjects } from "./assets/projects";
 import {
@@ -23,6 +31,63 @@ const allLabelByLanguage = {
 
 function App() {
   const { language } = useLanguage();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start end", "end start"],
+  });
+
+  const springX = useSpring(pointerX, {
+    stiffness: 140,
+    damping: 18,
+    mass: 0.2,
+  });
+  const springY = useSpring(pointerY, {
+    stiffness: 140,
+    damping: 18,
+    mass: 0.2,
+  });
+
+  const tiagoX = useTransform(springX, (value) => value * 24);
+  const tiagoY = useTransform(springY, (value) => value * 12);
+  const massudaX = useTransform(springX, (value) => value * -26);
+  const massudaY = useTransform(springY, (value) => value * 14);
+  const imageX = useTransform(springX, (value) => value * -16);
+  const imageY = useTransform(springY, (value) => value * -10);
+  const imageRotate = useTransform(springX, (value) => value * 2.5);
+
+  const scrollDriftX = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [-0.3, 0, 0.3],
+  );
+  const scrollLiftY = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [0.5, 0, -0.5],
+  );
+
+  const tiagoXScroll = useTransform(scrollDriftX, (value) => value * 30);
+  const tiagoYScroll = useTransform(scrollLiftY, (value) => value * 22);
+  const massudaXScroll = useTransform(scrollDriftX, (value) => value * -34);
+  const massudaYScroll = useTransform(scrollLiftY, (value) => value * 24);
+  const imageXScroll = useTransform(scrollDriftX, (value) => value * -20);
+  const imageYScroll = useTransform(scrollLiftY, (value) => value * -28);
+
+  const tiagoXCombined = useTransform(() => tiagoX.get() + tiagoXScroll.get());
+  const tiagoYCombined = useTransform(() => tiagoY.get() + tiagoYScroll.get());
+  const massudaXCombined = useTransform(
+    () => massudaX.get() + massudaXScroll.get(),
+  );
+  const massudaYCombined = useTransform(
+    () => massudaY.get() + massudaYScroll.get(),
+  );
+  const imageXCombined = useTransform(() => imageX.get() + imageXScroll.get());
+  const imageYCombined = useTransform(() => imageY.get() + imageYScroll.get());
+
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("all");
   const [changing, setChanging] = useState(false);
@@ -45,6 +110,26 @@ function App() {
     return technologies.filter((tech) => tech.categoryKey === selectedCategory);
   }, [selectedCategory, technologies]);
 
+  const handleHeroMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (shouldReduceMotion || !heroRef.current) {
+      return;
+    }
+
+    const rect = heroRef.current.getBoundingClientRect();
+    const halfWidth = rect.width / 2;
+    const halfHeight = rect.height / 2;
+    const normalizedX = (event.clientX - rect.left - halfWidth) / halfWidth;
+    const normalizedY = (event.clientY - rect.top - halfHeight) / halfHeight;
+
+    pointerX.set(Math.max(-1, Math.min(1, normalizedX)));
+    pointerY.set(Math.max(-1, Math.min(1, normalizedY)));
+  };
+
+  const handleHeroMouseLeave = () => {
+    pointerX.set(0);
+    pointerY.set(0);
+  };
+
   return (
     <div
       className="i18n-content flex min-h-screen flex-col items-center overflow-x-hidden bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300"
@@ -60,8 +145,20 @@ function App() {
     >
       <Navbar />
       <div className="h-20 " />
-      <div className="relative flex w-full flex-col items-center px-4 pb-12 md:mb-[-24vh] z-0 sm:px-8 md:px-12 md:pb-20 lg:px-10">
-        <div className="mb-4 flex flex-col items-center text-center md:hidden">
+      <div
+        ref={heroRef}
+        className="relative z-0 flex w-full flex-col items-center px-4 pb-12 sm:px-8 md:mb-[-24vh] md:px-12 md:pb-20 lg:px-10"
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
+      >
+        <motion.div
+          className="mb-4 flex flex-col items-center text-center md:hidden"
+          style={
+            shouldReduceMotion
+              ? undefined
+              : { x: tiagoXCombined, y: tiagoYCombined }
+          }
+        >
           {/* Mobile */}
           <AnimatedElement
             className="text-[clamp(2.4rem,13vw,4.5rem)]  italic font-bold text-(--color-text-secondary) leading-none"
@@ -77,27 +174,50 @@ function App() {
           >
             Massuda
           </AnimatedElement>
-        </div>
+        </motion.div>
         {/* >= a tablet */}
-        <AnimatedElement
-          className="absolute lg:left-[40%] top-[12%] hidden -translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary) md:block"
-          direction="left"
-          delay={200}
+        <motion.div
+          className="absolute top-[12%] hidden lg:left-[40%] md:block"
+          style={
+            shouldReduceMotion
+              ? undefined
+              : { x: tiagoXCombined, y: tiagoYCombined }
+          }
         >
-          Tiago
-        </AnimatedElement>
-        <img
+          <AnimatedElement
+            className="-translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)"
+            direction="left"
+            delay={200}
+          >
+            Tiago
+          </AnimatedElement>
+        </motion.div>
+        <motion.img
           src={photo}
           alt={language === "pt" ? "Perfil" : "Profile"}
-          className="z-10 w-[78%] max-w-88 rounded-b-full shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] sm:w-[62%] md:w-[48%] md:max-w-none lg:w-2/5 md:mr-40 lg:mr-50"
+          className="z-10 w-[78%] max-w-88 rounded-b-full shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] sm:w-[62%] md:mr-40 md:w-[48%] md:max-w-none lg:mr-50 lg:w-2/5"
+          style={
+            shouldReduceMotion
+              ? undefined
+              : { x: imageXCombined, y: imageYCombined, rotateZ: imageRotate }
+          }
         />
-        <AnimatedElement
-          className="absolute left-1/2  top-[28%] hidden text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary) md:block"
-          direction="right"
-          delay={400}
+        <motion.div
+          className="absolute left-1/2 top-[28%] hidden md:block"
+          style={
+            shouldReduceMotion
+              ? undefined
+              : { x: massudaXCombined, y: massudaYCombined }
+          }
         >
-          Massuda
-        </AnimatedElement>
+          <AnimatedElement
+            className="text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)"
+            direction="right"
+            delay={400}
+          >
+            Massuda
+          </AnimatedElement>
+        </motion.div>
         <AnimatedElement
           className="mt-6 flex flex-col items-center gap-1 text-(--color-text-secondary) text-center text-base italic font-bold sm:text-lg md:absolute md:left-[60%] md:top-[50%] md:mt-0 md:items-start md:text-[2.7vh]"
           direction="bottom"

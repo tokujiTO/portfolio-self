@@ -217,7 +217,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
         {datalist.map((item, index) => (
           <div
             key={index}
-            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)] border-2 shadow-(--color-text-secondary) border-(--color-text-secondary) flex-col rounded-xl bg-(--color-text-secondary-reversed) p-4 transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
+            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)]  shadow-(--color-text-secondary) flex-col rounded-xl bg-(--color-text-secondary-reversed) p-4 transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
             style={{
               transform: `scale(${calculateScale(index)})`,
               opacity: 0.5 + (calculateScale(index) - 0.8) / 0.8,
