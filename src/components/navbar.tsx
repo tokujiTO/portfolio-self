@@ -19,7 +19,7 @@ export default function Navbar() {
               ? "Alternar idioma para inglês"
               : "Switch language to Portuguese"
           }
-          className="flex h-10 items-center rounded-full border border-(--color-border-soft) bg-(--color-surface) px-3 text-(--color-text-primary) shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer sm:h-12 sm:px-4"
+          className="flex h-10 items-center rounded-full border border-(--color-border-soft) bg-(--color-surface) px-3 text-(--color-text-secondary) shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer sm:h-12 sm:px-4"
         >
           <span className="text-xs font-semibold uppercase sm:text-sm">
             {language === "pt" ? "EN" : "PT"}
@@ -34,7 +34,7 @@ export default function Navbar() {
               ? `Alternar para tema ${theme === "light" ? "escuro" : "claro"}`
               : `Switch to ${theme === "light" ? "dark" : "light"} theme`
           }
-          className="flex h-10 items-center gap-1.5 rounded-full border border-(--color-border-soft) bg-(--color-surface) px-3 text-(--color-text-primary) shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer sm:h-12 sm:gap-2 sm:px-4"
+          className="flex h-10 items-center gap-1.5 rounded-full border border-(--color-border-soft) bg-(--color-surface) px-3 text-(--color-text-secondary) shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer sm:h-12 sm:gap-2 sm:px-4"
         >
           {theme === "light" ? <MoonIcon size={20} /> : <SunIcon size={20} />}
           <span className="text-xs font-medium sm:text-sm">

@@ -26,7 +26,7 @@ export default function AboutMe() {
         <h1 className="mt-2 w-full text-center text-3xl font-bold sm:text-4xl">
           {language === "pt" ? "Sobre mim" : "About me"}
         </h1>
-        <div className="flex flex-col items-stretch justify-center gap-8 text-base sm:text-lg md:text-xl lg:flex-row lg:gap-14">
+        <div className="flex flex-col indent-12 items-stretch justify-center gap-8 text-base sm:text-lg md:text-xl lg:flex-row lg:gap-14">
           <AnimatedElement
             className="flex min-h-[30vh] items-start"
             direction="left"

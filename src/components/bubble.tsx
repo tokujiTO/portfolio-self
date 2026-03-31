@@ -11,6 +11,8 @@ export default function Bubble() {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
+  const menuItemClass =
+    "relative inline-flex cursor-pointer text-xs font-bold tracking-tight italic sm:text-lg after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-(--color-text-secondary) after:transition-transform after:duration-300 hover:after:scale-x-100";
 
   // Quando abrir a tela expandir o menu, depois de 3 segundos recolher o menu
   useEffect(() => {
@@ -73,7 +75,7 @@ export default function Bubble() {
         h-12 flex items-center
         delay-100 flex-col relative
         px-3 sm:p-4 bg-(--color-surface) backdrop-blur-md shadow-lg rounded-2xl border border-(--color-border-soft)
-        cursor-pointer sm:text-lg text-(--color-text-primary)
+        cursor-pointer sm:text-lg text-(--color-text-secondary)
         transition-all duration-500 ease-in-out overflow-hidden
         `}
       >
@@ -96,7 +98,7 @@ export default function Bubble() {
                 {language === "pt" ? "Menu" : "Menu"}
               </span>
               <span
-                className="text-xs font-bold tracking-tight italic sm:text-lg"
+                className={menuItemClass}
                 onClick={() => {
                   handleScroll("about");
                   expand();
@@ -105,7 +107,7 @@ export default function Bubble() {
                 {language === "pt" ? "Sobre mim" : "About"}
               </span>
               <span
-                className="text-xs font-bold tracking-tight italic sm:text-lg"
+                className={menuItemClass}
                 onClick={() => {
                   handleScroll("projects");
                   expand();
@@ -114,7 +116,7 @@ export default function Bubble() {
                 {language === "pt" ? "Projetos" : "Projects"}
               </span>
               <span
-                className="text-xs font-bold tracking-tight italic sm:text-lg"
+                className={menuItemClass}
                 onClick={() => {
                   handleScroll("technologies");
                   expand();
@@ -123,7 +125,7 @@ export default function Bubble() {
                 {language === "pt" ? "Tecnologias" : "Technologies"}
               </span>
               <span
-                className="text-xs font-bold tracking-tight italic sm:text-lg"
+                className={menuItemClass}
                 onClick={() => {
                   handleScroll("contact");
                   expand();
@@ -195,7 +197,7 @@ export default function Bubble() {
         h-10 sm:h-12 flex items-center
         delay-100
         px-3 sm:p-4 bg-(--color-surface) backdrop-blur-md rounded-full shadow-lg border border-(--color-border-soft)
-        cursor-pointer text-sm sm:text-lg text-(--color-text-primary)
+        cursor-pointer text-sm sm:text-lg text-(--color-text-secondary)
         transition-all duration-500 ease-in-out overflow-hidden
       `}
     >
@@ -215,25 +217,25 @@ export default function Bubble() {
             className={`flex items-center gap-3 sm:gap-8 ${showCloseIcon ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"} transition-all duration-300`}
           >
             <span
-              className="text-xs font-bold tracking-tight italic sm:text-lg"
+              className={menuItemClass}
               onClick={() => handleScroll("about")}
             >
               {language === "pt" ? "Sobre mim" : "About"}
             </span>
             <span
-              className="text-xs font-bold tracking-tight italic sm:text-lg"
+              className={menuItemClass}
               onClick={() => handleScroll("projects")}
             >
               {language === "pt" ? "Projetos" : "Projects"}
             </span>
             <span
-              className="text-xs font-bold tracking-tight italic sm:text-lg"
+              className={menuItemClass}
               onClick={() => handleScroll("technologies")}
             >
               {language === "pt" ? "Tecnologias" : "Technologies"}
             </span>
             <span
-              className="text-xs font-bold tracking-tight italic sm:text-lg"
+              className={menuItemClass}
               onClick={() => handleScroll("contact")}
             >
               {language === "pt" ? "Contato" : "Contact"}

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AnimatedElement from "./components/animatedElement";
 import Navbar from "./components/navbar";
 import photo from "./assets/68ba2c58-eef4-40e4-81de-ada512adafcd Background Removed.png";
@@ -9,6 +9,7 @@ import background from "./assets/background.png";
 import {
   motion,
   useMotionValue,
+  useMotionTemplate,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -34,6 +35,9 @@ function App() {
   const { language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
+  const [isWideScreen, setIsWideScreen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth > 640,
+  );
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
   const { scrollYProgress } = useScroll({
@@ -93,6 +97,23 @@ function App() {
   );
   const imageXCombined = useTransform(() => imageX.get() + imageXScroll.get());
   const imageYCombined = useTransform(() => imageY.get() + imageYScroll.get());
+  const backgroundPosX = useTransform(springX, (value) => 50 + value * 4);
+  const backgroundPosY = useTransform(springY, (value) => 50 + value * 3);
+  const backgroundPosition = useMotionTemplate`${backgroundPosX}% ${backgroundPosY}%`;
+  const isParallaxEnabled = !shouldReduceMotion && isWideScreen;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth > 640);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("all");
@@ -116,50 +137,52 @@ function App() {
     return technologies.filter((tech) => tech.categoryKey === selectedCategory);
   }, [selectedCategory, technologies]);
 
-  const handleHeroMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (shouldReduceMotion || !heroRef.current) {
+  const handlePageMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isParallaxEnabled) {
       return;
     }
 
-    const rect = heroRef.current.getBoundingClientRect();
-    const halfWidth = rect.width / 2;
-    const halfHeight = rect.height / 2;
-    const normalizedX = (event.clientX - rect.left - halfWidth) / halfWidth;
-    const normalizedY = (event.clientY - rect.top - halfHeight) / halfHeight;
+    const halfWidth = window.innerWidth / 2;
+    const halfHeight = window.innerHeight / 2;
+    const normalizedX = (event.clientX - halfWidth) / halfWidth;
+    const normalizedY = (event.clientY - halfHeight) / halfHeight;
 
     pointerX.set(Math.max(-1, Math.min(1, normalizedX)));
     pointerY.set(Math.max(-1, Math.min(1, normalizedY)));
   };
 
-  const handleHeroMouseLeave = () => {
+  const handlePageMouseLeave = () => {
     pointerX.set(0);
     pointerY.set(0);
   };
 
   return (
-    <div
+    <motion.div
       className="i18n-content flex min-h-screen flex-col items-center overflow-x-hidden bg-linear-to-b from-(--color-bg-main-from) to-(--color-bg-main-to) text-(--color-text-primary) transition-colors duration-300"
       style={{
-        backgroundImage: `url(${background})`,
+        // background image only on large screens
+        backgroundImage:
+          window.innerWidth > 640 ? `url(${background})` : undefined,
         backgroundSize: "30vw",
+        backgroundPosition: isParallaxEnabled ? backgroundPosition : "50% 50%",
         backgroundRepeat: "repeat",
         imageRendering: "pixelated",
       }}
+      onMouseMove={handlePageMouseMove}
+      onMouseLeave={handlePageMouseLeave}
     >
       <Navbar />
       <div className="h-20 " />
       <div
         ref={heroRef}
         className="relative z-0 flex w-full flex-col items-center px-4 pb-12 sm:px-8 md:mb-[-24vh] md:px-12 md:pb-20 lg:px-10"
-        onMouseMove={handleHeroMouseMove}
-        onMouseLeave={handleHeroMouseLeave}
       >
         <motion.div
           className="mb-4 flex flex-col items-center text-center md:hidden"
           style={
-            shouldReduceMotion
-              ? undefined
-              : { x: tiagoXCombined, y: tiagoYCombined }
+            isParallaxEnabled
+              ? { x: tiagoXCombined, y: tiagoYCombined }
+              : undefined
           }
         >
           {/* Mobile */}
@@ -182,19 +205,12 @@ function App() {
         <motion.div
           className="absolute top-[12%] hidden lg:left-[40%] md:block"
           style={
-            shouldReduceMotion
-              ? undefined
-              : { x: tiagoXCombined, y: tiagoYCombined }
+            isParallaxEnabled
+              ? { x: tiagoXCombined, y: tiagoYCombined }
+              : undefined
           }
         >
-          <motion.div
-            className="-translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)"
-            style={
-              shouldReduceMotion
-                ? undefined
-                : { x: tiagoXCombined, y: tiagoYCombined }
-            }
-          >
+          <motion.div className="-translate-x-full text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary)">
             <AnimatedElement
               className={`text-[clamp(4rem,12vw,18vh)] italic font-bold text-(--color-text-secondary) `}
               direction="left"
@@ -209,17 +225,17 @@ function App() {
           alt={language === "pt" ? "Perfil" : "Profile"}
           className="z-10 w-[78%] max-w-88 rounded-b-full shadow-[0_30px_5px_-16px_rgba(0,0,0,0.2)] sm:w-[62%] md:mr-40 md:w-[48%] md:max-w-none lg:mr-50 lg:w-2/5"
           style={
-            shouldReduceMotion
-              ? undefined
-              : { x: imageXCombined, y: imageYCombined, rotateZ: imageRotate }
+            isParallaxEnabled
+              ? { x: imageXCombined, y: imageYCombined, rotateZ: imageRotate }
+              : undefined
           }
         />
         <motion.div
           className="absolute left-1/2 top-[28%] hidden md:block"
           style={
-            shouldReduceMotion
-              ? undefined
-              : { x: massudaXCombined, y: massudaYCombined }
+            isParallaxEnabled
+              ? { x: massudaXCombined, y: massudaYCombined }
+              : undefined
           }
         >
           <AnimatedElement
@@ -326,7 +342,7 @@ function App() {
         )}
       </div>
       <Footer />
-    </div>
+    </motion.div>
   );
 }
 
