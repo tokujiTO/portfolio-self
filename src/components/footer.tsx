@@ -31,7 +31,8 @@ const Footer = () => {
             href="https://github.com/tokujiTO"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-white transition-colors"
+            aria-label="GitHub"
+            className="hover:text-(--color-text-secondary) transition-colors"
           >
             <GithubLogoIcon size={28} />
           </a>
@@ -39,26 +40,28 @@ const Footer = () => {
             href="https://linkedin.com/in/tiago-tokugi-massuda"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-white transition-colors"
+            aria-label="LinkedIn"
+            className="hover:text-(--color-text-secondary) transition-colors"
           >
             <LinkedinLogoIcon size={28} />
           </a>
           <a
             href="mailto:tiagomassuda123@gmail.com"
-            className="hover:text-white transition-colors"
+            aria-label={language === "pt" ? "E-mail" : "Email"}
+            className="hover:text-(--color-text-secondary) transition-colors"
           >
             <EnvelopeSimpleIcon size={28} />
           </a>
         </div>
 
         <div className="flex flex-wrap justify-center md:justify-end gap-2 text-[10px] uppercase tracking-widest font-mono">
-          <span className="px-2 py-1 border border-gray-700 rounded ">
+          <span className="px-2 py-1 border border-(--color-border-soft) rounded ">
             AWS Cloud
           </span>
-          <span className="px-2 py-1 border border-gray-700 rounded ">
+          <span className="px-2 py-1 border border-(--color-border-soft) rounded ">
             Cybersecurity
           </span>
-          <span className="px-2 py-1 border border-gray-700 rounded ">
+          <span className="px-2 py-1 border border-(--color-border-soft) rounded ">
             React/Flutter
           </span>
         </div>

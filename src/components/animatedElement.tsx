@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 
 // Direções disponíveis: 'left', 'right', 'top', 'bottom'
 import type { ReactNode } from "react";
@@ -22,10 +23,12 @@ export default function AnimatedElement({
 }: AnimatedElementProps) {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
 
   // Mapeia direções para propriedades de transformação
   const getTransformValue = () => {
-    if (!isVisible) {
+    // Com reduced-motion, mantém só o fade (sem deslocamento).
+    if (!isVisible && !shouldReduceMotion) {
       switch (direction) {
         case "left":
           return "translateX(-100px)";
@@ -43,6 +46,8 @@ export default function AnimatedElement({
   };
 
   useEffect(() => {
+    const node = ref.current;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -52,13 +57,13 @@ export default function AnimatedElement({
       { threshold: 0.1 },
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    if (node) {
+      observer.observe(node);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (node) {
+        observer.unobserve(node);
       }
     };
   }, []);

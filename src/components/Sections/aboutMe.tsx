@@ -1,40 +1,24 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from "motion/react";
+import { useRef } from "react";
+import { motion, useTransform } from "motion/react";
 import AnimatedElement from "../animatedElement";
 import { useLanguage } from "../../context/languageContext";
+import { useParallax } from "../../hooks/useParallax";
 
 export default function AboutMe() {
   const { language } = useLanguage();
   const aboutRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
-  const [isWideScreen, setIsWideScreen] = useState(() =>
-    typeof window === "undefined" ? true : window.innerWidth > 640,
-  );
-  const isParallaxEnabled = !shouldReduceMotion && isWideScreen;
 
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const { scrollYProgress } = useScroll({
+  const {
+    isEnabled: isParallaxEnabled,
+    springX,
+    springY,
+    scrollYProgress,
+    handleMouseMove,
+    handleMouseLeave,
+  } = useParallax({
     target: aboutRef,
-    offset: ["start end", "end start"],
-  });
-
-  const springX = useSpring(pointerX, {
-    stiffness: 120,
-    damping: 20,
-    mass: 0.2,
-  });
-  const springY = useSpring(pointerY, {
-    stiffness: 120,
-    damping: 20,
-    mass: 0.2,
+    spring: { stiffness: 120, damping: 20, mass: 0.2 },
+    pointerSource: "element",
   });
 
   const introX = useTransform(springX, (value) => value * 12);
@@ -75,43 +59,11 @@ export default function AboutMe() {
   const rightXCombined = useTransform(() => rightX.get() + rightXScroll.get());
   const rightYCombined = useTransform(() => rightY.get() + rightYScroll.get());
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsWideScreen(window.innerWidth > 640);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!isParallaxEnabled || !aboutRef.current) {
-      return;
-    }
-
-    const rect = aboutRef.current.getBoundingClientRect();
-    const halfWidth = rect.width / 2;
-    const halfHeight = rect.height / 2;
-    const normalizedX = (event.clientX - rect.left - halfWidth) / halfWidth;
-    const normalizedY = (event.clientY - rect.top - halfHeight) / halfHeight;
-
-    pointerX.set(Math.max(-1, Math.min(1, normalizedX)));
-    pointerY.set(Math.max(-1, Math.min(1, normalizedY)));
-  };
-
-  const handleMouseLeave = () => {
-    pointerX.set(0);
-    pointerY.set(0);
-  };
-
   return (
-    <div
+    <section
       ref={aboutRef}
       id="about"
+      aria-labelledby="about-title"
       // shadow to top
       className="flex w-full flex-col gap-10 shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.2)] rounded-tr-[18%] bg-(--color-panel) px-4 py-14 pt-28 text-(--color-text-secondary) transition-colors duration-300 sm:px-8 md:rounded-tr-[24%] md:px-12 md:py-16 md:pt-40 lg:gap-12 lg:px-20 lg:py-20 lg:pt-48"
       onMouseMove={handleMouseMove}
@@ -125,11 +77,11 @@ export default function AboutMe() {
             : undefined
         }
       >
-        <h1 className=" text-center text-xl font-bold italic leading-snug sm:text-2xl md:text-3xl">
+        <p className=" text-center text-xl font-bold italic leading-snug sm:text-2xl md:text-3xl">
           {language === "pt"
             ? "Estudante de Ciência da Computação @ Mauá | Especialista em Cloud | Desenvolvedor de Software"
             : "Computer Science Student @ Maua | Cloud Specialist | Software Developer"}
-        </h1>
+        </p>
         <span className="mt-3 max-w-4xl text-center text-base italic font-thin sm:text-lg md:text-2xl">
           {language === "pt"
             ? "Transformando ideias complexas em experiências digitais seguras e escaláveis."
@@ -137,7 +89,8 @@ export default function AboutMe() {
         </span>
       </motion.div>
       <div className="flex w-full flex-col gap-8 text-justify md:gap-12">
-        <motion.h1
+        <motion.h2
+          id="about-title"
           className="mt-2 w-full text-center text-3xl font-bold sm:text-4xl"
           style={
             isParallaxEnabled
@@ -146,7 +99,7 @@ export default function AboutMe() {
           }
         >
           {language === "pt" ? "Sobre mim" : "About me"}
-        </motion.h1>
+        </motion.h2>
         <div className="flex flex-col indent-12 items-stretch justify-center gap-8 text-base sm:text-lg md:text-xl lg:flex-row lg:gap-14">
           <motion.div
             style={
@@ -185,6 +138,6 @@ export default function AboutMe() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

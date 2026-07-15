@@ -1,5 +1,5 @@
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "../context/languageContext";
 
 interface CarouselItem {
@@ -23,6 +23,7 @@ interface CarouselProps {
 export default function Carousel({ data, clickable }: CarouselProps) {
   const { language } = useLanguage();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [cardPositions, setCardPositions] = useState<number[]>([]);
   const [containerWidth, setContainerWidth] = useState(0);
   const [cardHalfWidth, setCardHalfWidth] = useState(160);
@@ -46,7 +47,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const centerFirstCard = () => {
+  const centerFirstCard = useCallback(() => {
     if (scrollContainerRef.current && datalist.length > 0) {
       const container = scrollContainerRef.current;
       const firstCard = container.children[0] as HTMLElement;
@@ -58,98 +59,79 @@ export default function Carousel({ data, clickable }: CarouselProps) {
         const scrollPosition =
           firstCard.offsetLeft - (containerWidth / 2 - cardWidth / 2);
 
-        // Ajusta apenas o scroll horizontal
-        container.scrollTo({
-          left: scrollPosition,
-          behavior: "smooth",
-        });
+        container.scrollTo({ left: scrollPosition, behavior: "smooth" });
       }
     }
-  };
+  }, [datalist.length]);
 
-  const handlePrevious = () => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const containerWidth = container.clientWidth;
+  // Rola para o card imediatamente à esquerda do centro (seta "anterior").
+  const scrollToPrevious = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-      // Encontra o próximo card que está à direita do centro
-      const cards = Array.from(container.querySelectorAll(".carousel-card"));
-      let nextCard = null;
+    const containerWidth = container.clientWidth;
+    const cards = Array.from(container.querySelectorAll(".carousel-card"));
 
-      for (const card of cards) {
-        const rect = card.getBoundingClientRect();
-        const cardCenter =
-          rect.left + rect.width / 2 - container.getBoundingClientRect().left;
+    for (let i = cards.length - 1; i >= 0; i--) {
+      const rect = cards[i].getBoundingClientRect();
+      const cardCenter =
+        rect.left + rect.width / 2 - container.getBoundingClientRect().left;
 
-        if (cardCenter > containerWidth / 2 + 10) {
-          // +10 para evitar flutuações
-          nextCard = card;
-          break;
-        }
-      }
-
-      if (nextCard) {
-        nextCard.scrollIntoView({
+      if (cardCenter < containerWidth / 2 - 10) {
+        cards[i].scrollIntoView({
           behavior: "smooth",
           block: "nearest",
           inline: "center",
         });
+        return;
       }
     }
   };
 
-  const handleNext = () => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const containerWidth = container.clientWidth;
+  // Rola para o card imediatamente à direita do centro (seta "próximo").
+  const scrollToNext = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-      // Encontra o próximo card que está à esquerda do centro
-      const cards = Array.from(container.querySelectorAll(".carousel-card"));
-      let prevCard = null;
+    const containerWidth = container.clientWidth;
+    const cards = Array.from(container.querySelectorAll(".carousel-card"));
 
-      // Percorre do final para o início
-      for (let i = cards.length - 1; i >= 0; i--) {
-        const card = cards[i];
-        const rect = card.getBoundingClientRect();
-        const cardCenter =
-          rect.left + rect.width / 2 - container.getBoundingClientRect().left;
+    for (const card of cards) {
+      const rect = card.getBoundingClientRect();
+      const cardCenter =
+        rect.left + rect.width / 2 - container.getBoundingClientRect().left;
 
-        if (cardCenter < containerWidth / 2 - 10) {
-          // -10 para evitar flutuações
-          prevCard = card;
-          break;
-        }
-      }
-
-      if (prevCard) {
-        prevCard.scrollIntoView({
+      if (cardCenter > containerWidth / 2 + 10) {
+        card.scrollIntoView({
           behavior: "smooth",
           block: "nearest",
           inline: "center",
         });
+        return;
       }
     }
   };
 
-  const updateCardScales = () => {
+  const updateCardScales = useCallback(() => {
     if (!scrollContainerRef.current) return;
 
     const cards = Array.from(
       scrollContainerRef.current.querySelectorAll(".carousel-card"),
     );
+    const containerRect =
+      scrollContainerRef.current.getBoundingClientRect();
     const positions = cards.map((card) => {
       const rect = card.getBoundingClientRect();
-      const containerRect = scrollContainerRef.current!.getBoundingClientRect();
       return rect.left + rect.width / 2 - containerRect.left;
     });
 
     setCardPositions(positions);
-  };
+  }, []);
 
   const calculateScale = (index: number) => {
     if (cardPositions.length === 0) return 1;
 
-    // Do NOT read ref during render. Use state updated by effect/resize.
+    // Não lê o ref durante o render; usa o state atualizado por effect/resize.
     const width = containerWidth || 1000;
     const cardCenter = cardPositions[index];
     const containerCenter = width / 2;
@@ -181,8 +163,13 @@ export default function Carousel({ data, clickable }: CarouselProps) {
       updateCardScales();
     };
 
+    // Throttle do scroll via requestAnimationFrame para evitar layout thrash.
     const handleScroll = () => {
-      updateCardScales();
+      if (rafRef.current !== null) return;
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        updateCardScales();
+      });
     };
 
     handleResize();
@@ -191,21 +178,22 @@ export default function Carousel({ data, clickable }: CarouselProps) {
       centerFirstCard();
     }, 100);
 
-    container.addEventListener("scroll", handleScroll);
+    container.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.clearTimeout(timeoutId);
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
       container.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
     };
-  }, [datalist.length]);
+  }, [centerFirstCard, updateCardScales]);
 
   return (
-    <div
-      id="projects"
-      className="relative flex h-[68vh] w-full flex-col sm:h-[72vh] lg:h-[80vh]"
-    >
+    <div className="relative flex h-[68vh] w-full flex-col sm:h-[72vh] lg:h-[80vh]">
       <div
         ref={scrollContainerRef}
         className="scroll-container scrollbar-hide flex h-full w-full flex-row items-center justify-start gap-6 overflow-x-scroll sm:gap-10 lg:gap-16"
@@ -216,7 +204,7 @@ export default function Carousel({ data, clickable }: CarouselProps) {
       >
         {datalist.map((item, index) => (
           <div
-            key={index}
+            key={item.title || item.name || `card-${index}`}
             className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)]  shadow-(--color-text-secondary) flex-col rounded-xl bg-(--color-text-secondary-reversed) p-4 transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
             style={{
               transform: `scale(${calculateScale(index)})`,
@@ -239,9 +227,9 @@ export default function Carousel({ data, clickable }: CarouselProps) {
             }}
           >
             <div className="flex h-full flex-col gap-3 text-(--color-text-secondary)">
-              <h2 className="text-lg font-bold leading-tight lg:text-xl">
+              <h3 className="text-lg font-bold leading-tight lg:text-xl">
                 {item.title || item.name}
-              </h2>
+              </h3>
 
               {item.description && (
                 <p className="line-clamp-3 text-sm text-(--color-text-secondary)/80 lg:text-base">
@@ -320,14 +308,18 @@ export default function Carousel({ data, clickable }: CarouselProps) {
 
       <div className="absolute top-1/2 z-40 hidden w-full -translate-y-1/2 transform justify-between px-4 sm:flex sm:px-6 lg:px-10">
         <button
-          onClick={handleNext}
-          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30 sm:p-2"
+          type="button"
+          onClick={scrollToPrevious}
+          aria-label={language === "pt" ? "Projeto anterior" : "Previous project"}
+          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-(--color-surface-hover) sm:p-2"
         >
           <CaretLeftIcon size={28} />
         </button>
         <button
-          onClick={handlePrevious}
-          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30 sm:p-2"
+          type="button"
+          onClick={scrollToNext}
+          aria-label={language === "pt" ? "Próximo projeto" : "Next project"}
+          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-(--color-surface-hover) sm:p-2"
         >
           <CaretRightIcon size={28} />
         </button>

@@ -1,60 +1,62 @@
-import { ArrowLineLeftIcon, MoonIcon, SunIcon } from "@phosphor-icons/react";
+import { ArrowLineLeftIcon } from "@phosphor-icons/react";
 import { ListIcon } from "@phosphor-icons/react/dist/icons/List";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "../context/languageContext";
-import { useTheme } from "../context/themeContext";
+import { useIsWideScreen } from "../hooks/useIsWideScreen";
+import ThemeLanguageControls from "./themeLanguageControls";
+
+type NavItem = { id: string; pt: string; en: string };
+
+const NAV_ITEMS: NavItem[] = [
+  { id: "about", pt: "Sobre mim", en: "About" },
+  { id: "projects", pt: "Projetos", en: "Projects" },
+  { id: "technologies", pt: "Tecnologias", en: "Technologies" },
+  { id: "contact", pt: "Contato", en: "Contact" },
+];
 
 export default function Bubble() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showIcon, setShowIcon] = useState(true);
   const [showCloseIcon, setShowCloseIcon] = useState(false);
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const { theme, toggleTheme } = useTheme();
-  const { language, toggleLanguage } = useLanguage();
-  const menuItemClass =
-    "relative inline-flex cursor-pointer text-xs font-bold tracking-tight italic sm:text-lg after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-(--color-text-secondary) after:transition-transform after:duration-300 hover:after:scale-x-100";
+  const { language } = useLanguage();
+  const isWideScreen = useIsWideScreen();
 
-  // Quando abrir a tela expandir o menu, depois de 3 segundos recolher o menu
-  useEffect(() => {
-    if (window.innerWidth < 640) return; // Não mostrar a animação em telas menores que 640px
-    const timer = setTimeout(() => {
-      setShowIcon(false);
-      setTimeout(() => setIsExpanded((prev) => !prev), 100);
-      setTimeout(() => setShowCloseIcon(true), 300);
-    }, 1000);
-    return () => clearTimeout(timer);
+  const menuItemClass =
+    "relative inline-flex cursor-pointer bg-transparent text-xs font-bold tracking-tight italic sm:text-lg after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-(--color-text-secondary) after:transition-transform after:duration-300 hover:after:scale-x-100";
+
+  const collapse = useCallback(() => {
+    setShowCloseIcon(false);
+    setTimeout(() => setIsExpanded(false), 100);
+    setTimeout(() => setShowIcon(true), 300);
   }, []);
+
+  const open = useCallback(() => {
+    setShowIcon(false);
+    setTimeout(() => setIsExpanded(true), 100);
+    setTimeout(() => setShowCloseIcon(true), 300);
+  }, []);
+
+  // Auto-expande o menu ao carregar em telas largas, recolhendo em seguida.
+  useEffect(() => {
+    if (!isWideScreen) return;
+    const timer = setTimeout(open, 1000);
+    return () => clearTimeout(timer);
+  }, [isWideScreen, open]);
 
   const handleScroll = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const expand = () => {
-    if (!isExpanded) {
-      setShowIcon(false);
-      setTimeout(() => setIsExpanded((prev) => !prev), 100);
-      setTimeout(() => setShowCloseIcon(true), 300);
-    } else {
-      setShowCloseIcon(false);
-      setTimeout(() => setIsExpanded((prev) => !prev), 100);
-      setTimeout(() => setShowIcon(true), 300);
-    }
-  };
-
   useEffect(() => {
     if (!isExpanded) return;
 
     const closeOnOutsideTouch = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node;
-
-      if (bubbleRef.current?.contains(target)) {
+      if (bubbleRef.current?.contains(event.target as Node)) {
         return;
       }
-
-      setShowCloseIcon(false);
-      setTimeout(() => setIsExpanded(false), 100);
-      setTimeout(() => setShowIcon(true), 300);
+      collapse();
     };
 
     document.addEventListener("mousedown", closeOnOutsideTouch);
@@ -64,9 +66,24 @@ export default function Bubble() {
       document.removeEventListener("mousedown", closeOnOutsideTouch);
       document.removeEventListener("touchstart", closeOnOutsideTouch);
     };
-  }, [isExpanded]);
+  }, [isExpanded, collapse]);
 
-  if (window.innerWidth < 640) {
+  const navButtons = (extraClass = "") =>
+    NAV_ITEMS.map((item) => (
+      <button
+        key={item.id}
+        type="button"
+        className={`${menuItemClass} ${extraClass}`}
+        onClick={() => {
+          handleScroll(item.id);
+          if (!isWideScreen) collapse();
+        }}
+      >
+        {language === "pt" ? item.pt : item.en}
+      </button>
+    ));
+
+  if (!isWideScreen) {
     return (
       <div
         ref={bubbleRef}
@@ -75,7 +92,7 @@ export default function Bubble() {
         h-12 flex items-center
         delay-100 flex-col relative
         px-3 sm:p-4 bg-(--color-surface) backdrop-blur-md shadow-lg rounded-2xl border border-(--color-border-soft)
-        cursor-pointer sm:text-lg text-(--color-text-secondary)
+        sm:text-lg text-(--color-text-secondary)
         transition-all duration-500 ease-in-out overflow-hidden
         `}
       >
@@ -83,106 +100,41 @@ export default function Bubble() {
           className={`flex items-center flex-col w-full ${isExpanded ? "justify-between" : "justify-center"} gap-1.5 sm:gap-2 whitespace-nowrap`}
         >
           {!isExpanded && (
-            <span
+            <button
+              type="button"
+              aria-label={language === "pt" ? "Abrir menu" : "Open menu"}
+              aria-expanded={isExpanded}
               className={`shrink-0 duration-100 transition-all ${showIcon ? "opacity-100 rotate-0" : "opacity-0 rotate-40"}`}
-              onClick={expand}
+              onClick={open}
             >
               <ListIcon size={32} />
-            </span>
+            </button>
           )}
           {isExpanded && (
-            <div
+            <nav
+              aria-label={language === "pt" ? "Menu principal" : "Main menu"}
               className={`flex flex-col w-full py-10 items-start pl-10 gap-10 sm:gap-8 ${showCloseIcon ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"} transition-all duration-300`}
             >
               <span className="text-3xl font-bold tracking-tight italic sm:text-lg">
-                {language === "pt" ? "Menu" : "Menu"}
+                Menu
               </span>
-              <span
-                className={menuItemClass}
-                onClick={() => {
-                  handleScroll("about");
-                  expand();
-                }}
-              >
-                {language === "pt" ? "Sobre mim" : "About"}
-              </span>
-              <span
-                className={menuItemClass}
-                onClick={() => {
-                  handleScroll("projects");
-                  expand();
-                }}
-              >
-                {language === "pt" ? "Projetos" : "Projects"}
-              </span>
-              <span
-                className={menuItemClass}
-                onClick={() => {
-                  handleScroll("technologies");
-                  expand();
-                }}
-              >
-                {language === "pt" ? "Tecnologias" : "Technologies"}
-              </span>
-              <span
-                className={menuItemClass}
-                onClick={() => {
-                  handleScroll("contact");
-                  expand();
-                }}
-              >
-                {language === "pt" ? "Contato" : "Contact"}
-              </span>
-              <div className="flex  w-full justify-end flex-row-reverse gap-4">
-                <button
-                  type="button"
-                  onClick={toggleLanguage}
-                  aria-label={
-                    language === "pt"
-                      ? "Alternar idioma para inglês"
-                      : "Switch language to Portuguese"
-                  }
-                  className="flex h-10 items-center rounded-full border border-(--color-border-soft) bg-(--color-surface) px-3 text-(--color-text-primary) shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer sm:h-12 sm:px-4"
-                >
-                  <span className="text-xs font-semibold uppercase sm:text-sm">
-                    {language === "pt" ? "EN" : "PT"}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  aria-label={
-                    language === "pt"
-                      ? `Alternar para tema ${theme === "light" ? "escuro" : "claro"}`
-                      : `Switch to ${theme === "light" ? "dark" : "light"} theme`
-                  }
-                  className="flex h-10 items-center gap-1.5 rounded-full border border-(--color-border-soft) bg-(--color-surface) px-3 text-(--color-text-primary) shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 cursor-pointer sm:h-12 sm:gap-2 sm:px-4"
-                >
-                  {theme === "light" ? (
-                    <MoonIcon size={20} />
-                  ) : (
-                    <SunIcon size={20} />
-                  )}
-                  <span className="text-xs font-medium sm:text-sm">
-                    {theme === "light"
-                      ? language === "pt"
-                        ? "Escuro"
-                        : "Dark"
-                      : language === "pt"
-                        ? "Claro"
-                        : "Light"}
-                  </span>
-                </button>
-              </div>
-            </div>
+              {navButtons("text-3xl")}
+              <ThemeLanguageControls
+                tone="primary"
+                className="w-full justify-end flex-row-reverse"
+              />
+            </nav>
           )}
           {isExpanded && (
-            <span
+            <button
+              type="button"
+              aria-label={language === "pt" ? "Fechar menu" : "Close menu"}
+              aria-expanded={isExpanded}
               className={`font-bold absolute left-7/9 top-10 -translate-x-full tracking-tighter duration-300 transition-all text-xs sm:text-sm ${showCloseIcon ? "opacity-100 translate-x-0 " : "opacity-0 -translate-x-20"} italic`}
-              onClick={expand}
+              onClick={collapse}
             >
               <ArrowLineLeftIcon size={32} />
-            </span>
+            </button>
           )}
         </div>
       </div>
@@ -197,7 +149,7 @@ export default function Bubble() {
         h-10 sm:h-12 flex items-center
         delay-100
         px-3 sm:p-4 bg-(--color-surface) backdrop-blur-md rounded-full shadow-lg border border-(--color-border-soft)
-        cursor-pointer text-sm sm:text-lg text-(--color-text-secondary)
+        text-sm sm:text-lg text-(--color-text-secondary)
         transition-all duration-500 ease-in-out overflow-hidden
       `}
     >
@@ -205,50 +157,34 @@ export default function Bubble() {
         className={`flex items-center w-full ${isExpanded ? "justify-between" : "justify-center"} gap-1.5 sm:gap-2 whitespace-nowrap`}
       >
         {!isExpanded && (
-          <span
-            className={`shrink-0 duration-100 transition-all ${showIcon ? "opacity-100 rotate-0" : "opacity-0 rotate-40"}`}
-            onClick={expand}
+          <button
+            type="button"
+            aria-label={language === "pt" ? "Abrir menu" : "Open menu"}
+            aria-expanded={isExpanded}
+            className={`shrink-0 cursor-pointer duration-100 transition-all ${showIcon ? "opacity-100 rotate-0" : "opacity-0 rotate-40"}`}
+            onClick={open}
           >
             <ListIcon size={32} />
-          </span>
+          </button>
         )}
         {isExpanded && (
-          <div
+          <nav
+            aria-label={language === "pt" ? "Menu principal" : "Main menu"}
             className={`flex items-center gap-3 sm:gap-8 ${showCloseIcon ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"} transition-all duration-300`}
           >
-            <span
-              className={menuItemClass}
-              onClick={() => handleScroll("about")}
-            >
-              {language === "pt" ? "Sobre mim" : "About"}
-            </span>
-            <span
-              className={menuItemClass}
-              onClick={() => handleScroll("projects")}
-            >
-              {language === "pt" ? "Projetos" : "Projects"}
-            </span>
-            <span
-              className={menuItemClass}
-              onClick={() => handleScroll("technologies")}
-            >
-              {language === "pt" ? "Tecnologias" : "Technologies"}
-            </span>
-            <span
-              className={menuItemClass}
-              onClick={() => handleScroll("contact")}
-            >
-              {language === "pt" ? "Contato" : "Contact"}
-            </span>
-          </div>
+            {navButtons()}
+          </nav>
         )}
         {isExpanded && (
-          <span
-            className={`font-bold tracking-tighter duration-300 transition-all text-xs sm:text-sm ${showCloseIcon ? "opacity-100 translate-x-0 " : "opacity-0 -translate-x-20"} italic`}
-            onClick={expand}
+          <button
+            type="button"
+            aria-label={language === "pt" ? "Fechar menu" : "Close menu"}
+            aria-expanded={isExpanded}
+            className={`font-bold cursor-pointer tracking-tighter duration-300 transition-all text-xs sm:text-sm ${showCloseIcon ? "opacity-100 translate-x-0 " : "opacity-0 -translate-x-20"} italic`}
+            onClick={collapse}
           >
             <ArrowLineLeftIcon size={32} />
-          </span>
+          </button>
         )}
       </div>
     </div>

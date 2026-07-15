@@ -1,23 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-
-type Theme = "light" | "dark";
-
-interface ThemeContextValue {
-  theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
-}
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { ThemeContext, type Theme } from "./themeContext";
 
 const THEME_STORAGE_KEY = "portfolio-theme";
-
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const getSystemTheme = (): Theme => {
   if (typeof window === "undefined") {
@@ -68,14 +52,4 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-
-  return context;
 }
