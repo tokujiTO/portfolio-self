@@ -1,0 +1,94 @@
+[
+  {
+    "id": "it-support-maua",
+    "role": { "pt": "Assistente Técnico de TI", "en": "IT Support Technician" },
+    "company": "Centro Universitário Instituto Mauá de Tecnologia",
+    "description": {
+      "pt": "Suporte técnico on-site em São Caetano do Sul, atuando em trabalho em equipe e resolução de problemas.",
+      "en": "On-site technical support in São Caetano do Sul, focused on teamwork and problem solving."
+    },
+    "period": "2026 —",
+    "current": true
+  },
+  {
+    "id": "aws-cloud-club-imt",
+    "role": {
+      "pt": "Coordenador Organizacional & Membro Técnico",
+      "en": "Organizational Coordinator & Technical Member"
+    },
+    "company": "AWS Cloud Club IMT",
+    "description": {
+      "pt": "Apoio à organização e execução de eventos do clube, além de suporte técnico em infraestrutura, ferramentas e recursos cloud da AWS.",
+      "en": "Support for club event planning and execution, plus technical support for infrastructure, tooling and AWS cloud resources."
+    },
+    "period": "2025 —",
+    "current": true
+  },
+  {
+    "id": "dev-community-director",
+    "role": {
+      "pt": "Diretor de Desenvolvimento e Desenvolvedor Mobile",
+      "en": "Director of Development and Mobile Developer"
+    },
+    "company": "Dev. Community Mauá",
+    "description": {
+      "pt": "Lidero a evolução técnica das squads, definindo padrões de arquitetura e otimizando pipelines de CI/CD na AWS, além de atuar no desenvolvimento mobile em React e Flutter.",
+      "en": "Leading the technical evolution of engineering squads, defining architecture standards and optimizing AWS CI/CD pipelines, while staying hands-on with mobile development in React and Flutter."
+    },
+    "period": "2025 —",
+    "current": true
+  },
+  {
+    "id": "dev-community-head-frontend",
+    "role": {
+      "pt": "Head de Front-End e Desenvolvedor Mobile",
+      "en": "Head of Front-End Development and Mobile Developer"
+    },
+    "company": "Dev. Community Mauá",
+    "description": {
+      "pt": "Liderança técnica de soluções cross-platform em React e Flutter, com pipelines de CI/CD na AWS (CloudFront) e mentoria da equipe.",
+      "en": "Technical leadership of cross-platform solutions in React and Flutter, with AWS CI/CD pipelines (CloudFront) and team mentoring."
+    },
+    "period": "2025"
+  },
+  {
+    "id": "nch-data-analysis",
+    "role": { "pt": "Estágio em Análise de Dados", "en": "Data Analysis Internship" },
+    "company": "Núcleo de Certificação e Homologação",
+    "description": {
+      "pt": "Automações em Excel com VBA e Office Scripts, além de otimização de fluxos de trabalho no Microsoft SharePoint.",
+      "en": "Excel automations with VBA and Office Scripts, plus workflow optimization on Microsoft SharePoint."
+    },
+    "period": "2025 — 26"
+  },
+  {
+    "id": "role-frontend-mobile",
+    "role": { "pt": "Desenvolvedor Frontend / Mobile", "en": "Frontend Developer / Mobile Developer" },
+    "company": "ROLE",
+    "description": {
+      "pt": "Desenvolvimento do aplicativo mobile da empresa em Flutter, com experiência consistente entre Android e iOS.",
+      "en": "Development of the company's mobile application in Flutter, delivering a consistent experience across Android and iOS."
+    },
+    "period": "2024 — 25"
+  },
+  {
+    "id": "devdynasty-frontend-mobile",
+    "role": { "pt": "Desenvolvedor Frontend / Mobile", "en": "Frontend Developer / Mobile Developer" },
+    "company": "DevDynasty Solutions",
+    "description": {
+      "pt": "Recursos mobile cross-platform em Flutter (autenticação, notificações, APIs em tempo real) e um portal interno com dashboards e controle de acesso por papéis.",
+      "en": "Cross-platform mobile features in Flutter (auth flows, push notifications, real-time APIs) and an internal portal with dashboards and role-based access control."
+    },
+    "period": "2024 — 26"
+  },
+  {
+    "id": "dev-community-frontend-mobile",
+    "role": { "pt": "Desenvolvedor Frontend / Mobile", "en": "Frontend Developer / Mobile Developer" },
+    "company": "Dev. Community Mauá",
+    "description": {
+      "pt": "Construção do app DevMédias em Flutter e de aplicações web em React, com pipelines de CI/CD na AWS (CloudFront).",
+      "en": "Built the DevMédias app in Flutter and web applications in React, with AWS CI/CD pipelines (CloudFront)."
+    },
+    "period": "2024 — 25"
+  }
+]

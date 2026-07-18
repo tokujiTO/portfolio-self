@@ -1,0 +1,77 @@
+[
+  {
+    "id": "biologia-gamificacao",
+    "category": { "pt": "Full-Stack · Acadêmico", "en": "Full-Stack · Academic" },
+    "title": "Gamificação de Biologia",
+    "description": {
+      "pt": "Aplicação de gamificação para questões de Biologia, aumentando o engajamento e a retenção de conteúdo no Ensino Médio.",
+      "en": "Gamification app for Biology questions, boosting engagement and content retention in high school."
+    },
+    "gradient": "linear-gradient(160deg,#ffd36b,#f2883f,#c0416a)",
+    "href": "https://github.com/tokujiTO/PII-1tri-2024"
+  },
+  {
+    "id": "mauaesports-portfolio",
+    "category": { "pt": "Full-Stack · Comunidade", "en": "Full-Stack · Community" },
+    "title": "MauaEsports",
+    "description": {
+      "pt": "Portfólio da comunidade MauaEsports, com API em Python e frontend em React, apresentando projetos e conquistas do esporte eletrônico.",
+      "en": "Portfolio for the MauaEsports community, React frontend and Python API, showcasing esports projects and achievements."
+    },
+    "gradient": "linear-gradient(160deg,#5ee7ff,#0e7c86,#1b2f6b)",
+    "href": "https://github.com/tokujiTO/PII3S-MauaEsports"
+  },
+  {
+    "id": "maua-fontys",
+    "category": { "pt": "Full-Stack · Internacional", "en": "Full-Stack · International" },
+    "title": "Mauá + Fontys",
+    "description": {
+      "pt": "Plataforma para organização e acompanhamento de competições em tempo real, em parceria com a Fontys University (Holanda); frontend e backend em React, Java e PostgreSQL.",
+      "en": "Platform for organizing and tracking real-time competitions, in partnership with Fontys University (Netherlands); frontend and backend in React, Java and PostgreSQL."
+    },
+    "gradient": "linear-gradient(160deg,#ff7ea8,#7b4bd1)",
+    "href": "https://github.com/fontys-maua-2526-tournament/web"
+  },
+  {
+    "id": "aws-cloud-club-maua",
+    "category": { "pt": "Liderança · Comunidade Cloud", "en": "Leadership · Cloud Community" },
+    "title": "AWS Cloud Club Mauá",
+    "description": {
+      "pt": "Liderança da comunidade estudantil oficial da AWS na Mauá, organizando eventos e workshops de Cloud Computing.",
+      "en": "Leadership of AWS's official student community at Maua, organizing cloud computing events and workshops."
+    },
+    "gradient": "linear-gradient(160deg,#ffb454,#e8622a,#7b4bd1)"
+  },
+  {
+    "id": "polig",
+    "category": { "pt": "Mobile · IA", "en": "Mobile · AI" },
+    "title": "PolIG",
+    "description": {
+      "pt": "App de geração de imagens por IA a partir de descrições textuais, com foco em qualidade visual para apoiar aulas.",
+      "en": "AI image-generation app from text descriptions, focused on visual quality to support classes."
+    },
+    "gradient": "linear-gradient(160deg,#7b4bd1,#ff6b9d,#5ee7ff)",
+    "href": "https://github.com/tokujiTO/PII4S_images_generator"
+  },
+  {
+    "id": "dev-community-maua",
+    "category": { "pt": "Liderança · Comunidade Tech", "en": "Leadership · Tech Community" },
+    "title": "Dev Community Mauá",
+    "description": {
+      "pt": "Direção de desenvolvimento da comunidade de tecnologia da Mauá, promovendo eventos e workshops para conectar estudantes ao mercado.",
+      "en": "Development leadership of Maua's tech community, promoting events and workshops connecting students to the market."
+    },
+    "gradient": "linear-gradient(160deg,#ff9a6b,#c0416a,#5b2a86)"
+  },
+  {
+    "id": "dunamis-tenis-de-mesa",
+    "category": { "pt": "Mobile · Design", "en": "Mobile · Design" },
+    "title": "Dunamis Tênis de Mesa",
+    "description": {
+      "pt": "Identidade visual e app de suporte para torneios de tênis de mesa, incluindo banners e logotipos em Flutter.",
+      "en": "Visual identity and support app for table tennis tournaments, including banners and logos in Flutter."
+    },
+    "gradient": "linear-gradient(160deg,#7a2a55,#c0416a,#ffd36b)",
+    "href": "https://github.com/tokujiTO/dunamisTM"
+  }
+]

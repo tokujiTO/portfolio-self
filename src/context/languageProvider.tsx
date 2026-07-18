@@ -1,65 +1,37 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { LanguageContext } from "./languageContext";
-import type { Language } from "../types/language";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { LanguageContext, type Language } from "./languageContext";
+import type { Localized } from "../types/content";
 
-const LANGUAGE_STORAGE_KEY = "portfolio-language";
+const STORAGE_KEY = "portfolio-lang";
 
-const getInitialLanguage = (): Language => {
-  if (typeof window === "undefined") {
-    return "pt";
-  }
-
-  const storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-
-  if (storedLanguage === "pt" || storedLanguage === "en") {
-    return storedLanguage;
-  }
-
-  return window.navigator.language.toLowerCase().startsWith("pt") ? "pt" : "en";
-};
-
-interface LanguageProviderProps {
-  children: ReactNode;
+function getInitialLanguage(): Language {
+  if (typeof window === "undefined") return "pt";
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (stored === "pt" || stored === "en") return stored;
+  return "pt";
 }
 
-export function LanguageProvider({ children }: LanguageProviderProps) {
+export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(getInitialLanguage);
-  const previousLanguageRef = useRef<Language | null>(null);
 
-  useEffect(() => {
-    document.documentElement.setAttribute("lang", language);
-    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-
-    let timeoutId: number | undefined;
-
-    if (
-      previousLanguageRef.current &&
-      previousLanguageRef.current !== language
-    ) {
-      document.documentElement.setAttribute("data-language-changing", "true");
-
-      timeoutId = window.setTimeout(() => {
-        document.documentElement.removeAttribute("data-language-changing");
-      }, 340);
-    }
-
-    previousLanguageRef.current = language;
-
-    return () => {
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
+  const toggleLanguage = useCallback(() => {
+    setLanguage((prev) => {
+      const next = prev === "pt" ? "en" : "pt";
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(STORAGE_KEY, next);
       }
-    };
-  }, [language]);
+      return next;
+    });
+  }, []);
+
+  const t = useCallback(
+    (value: Localized) => value[language],
+    [language],
+  );
 
   const value = useMemo(
-    () => ({
-      language,
-      setLanguage,
-      toggleLanguage: () =>
-        setLanguage((prev) => (prev === "pt" ? "en" : "pt")),
-    }),
-    [language],
+    () => ({ language, toggleLanguage, t }),
+    [language, toggleLanguage, t],
   );
 
   return (

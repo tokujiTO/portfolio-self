@@ -1,91 +1,233 @@
+/* ---------------------------------------------------------------------- */
+/* Fonts — must precede all other rules/imports per CSS spec              */
+/* ---------------------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap");
+
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------- */
+/* Design tokens — light (sunset) is the default, dark (synthwave) via    */
+/* [data-theme="dark"]. See .claude/skills/build-frontend/references/     */
+/* design-tokens.md for the source of truth.                              */
+/* ---------------------------------------------------------------------- */
 :root {
-  --color-bg-main-from: #18181b; /* Um cinza quase preto (Zink 950) */
-  --color-bg-main-to: #27272a; /* Um cinza escuro (Zink 900) */
-  --color-panel: #3c3c3c;
-  --color-footer: #232323;
-  --color-surface: rgba(255, 255, 255, 0.2);
-  --color-card: #ffffff;
-  --color-text-primary: #18181b;
-  --color-text-secondary: #f5f5f5;
-  --color-text-secondary-reversed: #18181b;
-  --color-text-tertiary: #a5a5a5;
-  --color-text-inverse: #f5f5f5;
-  --color-border-soft: rgba(0, 0, 0, 0.2);
+  --bg: #f6ecdc;
+  --fg: #3a2b1e;
+  --ink: #2a1d12;
+  --muted: #7a6552;
+  --faint: #9a8574;
+  --accent: #e8622a;
+  --accent2: #0e7c86;
+  --gold: #c98a2a;
+  --line: rgba(58, 43, 30, 0.16);
+  --card: rgba(255, 255, 255, 0.5);
+  --cardbd: rgba(58, 43, 30, 0.14);
+  --chip: rgba(58, 43, 30, 0.25);
+  --contactbg: #2a1d12;
+  --contactfg: #f6ecdc;
+  --contactmut: #c9b39c;
+  --navbg: rgba(246, 236, 220, 0.82);
+  --glow: none;
+  --gridop: 0;
+  --photobg: linear-gradient(160deg, #f6c14b, #f2883f 55%, #c8543a);
+  color-scheme: light;
 }
 
-[data-theme="light"] {
-  --color-bg-main-from: #e5e5e0;
-  --color-bg-main-to: #d5d5d0;
-  --color-panel: #eee;
-  --color-footer: #ddd;
-  --color-surface: rgba(255, 255, 255, 0.72);
-  --color-card: #d5d5d0;
-  --color-text-primary: #18181b;
-  --color-text-secondary: #18181b;
-  --color-text-secondary-reversed: #f5f5f5;
-  --color-text-tertiary: #7575755;
-  --color-text-inverse: #f5f5f5;
-  --color-border-soft: rgba(255, 255, 255, 0.2);
+:root[data-theme="dark"] {
+  --bg: #0a1428;
+  --fg: #dff0ff;
+  --ink: #ffffff;
+  --muted: #9fc3e0;
+  --faint: #6f92b4;
+  --accent: #5ee7ff;
+  --accent2: #ffd36b;
+  --gold: #ffd36b;
+  --line: rgba(94, 231, 255, 0.24);
+  --card: rgba(255, 255, 255, 0.05);
+  --cardbd: rgba(94, 231, 255, 0.3);
+  --chip: rgba(94, 231, 255, 0.36);
+  --contactbg: #050d1c;
+  --contactfg: #dff0ff;
+  --contactmut: #9fc3e0;
+  --navbg: rgba(10, 20, 40, 0.82);
+  --glow: 0 0 22px rgba(94, 231, 255, 0.4);
+  --gridop: 0.55;
+  --photobg: linear-gradient(160deg, #5ee7ff, #2f7fd6 55%, #0a1428);
+
+  color-scheme: dark;
 }
 
-body {
-  color: var(--color-text-primary);
-  background: linear-gradient(
-    to bottom,
-    var(--color-bg-main-from),
-    var(--color-bg-main-to)
-  );
-  transition:
-    background-color 250ms ease,
-    color 250ms ease;
+/* ---------------------------------------------------------------------- */
+/* Base                                                                   */
+/* ---------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
 }
 
-@keyframes language-swap {
-  0% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.995);
-    filter: blur(1px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-html[data-language-changing="true"] .i18n-content {
-  animation: language-swap 340ms cubic-bezier(0.2, 0.7, 0.2, 1);
-  will-change: opacity, transform, filter;
+html {
+  scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-language-changing="true"] .i18n-content {
-    animation: none;
+  html {
+    scroll-behavior: auto;
   }
 }
 
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none; /* Chrome, Safari e Opera */
-  }
-  .scroll-container {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .carousel-card {
-    scroll-snap-align: center;
-    flex: none; /* Evita que os cards se estiquem */
-  }
+html {
+  /* clip (not hidden) avoids turning the body into a scroll container, which
+     was causing sticky-nav + scroll jank. clip has no scroll-container side
+     effect on the y axis. */
+  overflow-x: clip;
 }
 
 body {
-  font-family: "Inter", sans-serif;
-  background-color: var(--color-bg-main-from);
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "DM Sans", system-ui, sans-serif;
+  overflow-x: clip;
+  transition:
+    background 0.6s ease,
+    color 0.6s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Keyframes                                                              */
+/* ---------------------------------------------------------------------- */
+@keyframes sunpulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.94;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Transform-based grid scroll — composited on the GPU (cheap), unlike the old
+   background-position drift which repainted every frame. One 34px tile → seamless loop. */
+@keyframes gridscroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-34px);
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Ambient animations run in CSS (compositor thread), NOT framer-motion,   */
+/* so they don't compete with scroll on the main thread.                   */
+/* ---------------------------------------------------------------------- */
+.sun-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6d8, #ffca5e);
+  box-shadow: 0 0 44px rgba(255, 220, 120, 0.8);
+  animation: sunpulse 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Night counterpart to .sun-core — a waning crescent. The pale disc is carved by an
+   offset radial mask so only a limb stays lit; the rest goes to transparent sky. The
+   neon glow rides a drop-shadow (not box-shadow) so it hugs the crescent's contour
+   instead of the square box. Breathes on the same sunpulse loop, a touch slower. */
+.moon-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 40%, #fdfcff, #cdd6f4 60%, #a9b4e0);
+  -webkit-mask: radial-gradient(circle at 112% 26%, transparent 70%, #000 71%);
+  mask: radial-gradient(circle at 112% 26%, transparent 70%, #000 71%);
+  filter:
+    drop-shadow(0 0 10px rgba(94, 231, 255, 0.55))
+    drop-shadow(0 0 26px rgba(180, 210, 255, 0.45));
+  animation: sunpulse 6s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.synth-grid {
+  will-change: transform;
+}
+/* grid only animates in dark, where it's actually visible (--gridop) */
+:root[data-theme="dark"] .synth-grid {
+  animation: gridscroll 3s linear infinite;
+}
+
+/* Respect reduced motion for every ambient loop and transition. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Utility layer                                                          */
+/* ---------------------------------------------------------------------- */
+.content-col {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 48px);
+}
+
+.section-pad {
+  padding: clamp(28px, 4vw, 44px) 0;
+}
+
+/* Clears the floating sticky nav (top:14px + pill height) so menu/nav links
+   don't land with the heading tucked under it. */
+section[id],
+#top {
+  scroll-margin-top: 96px;
+}
+
+.mono {
+  font-family: "Space Mono", monospace;
+}
+
+.font-syne {
+  font-family: "Syne", sans-serif;
+}
+
+.font-dm {
+  font-family: "DM Sans", sans-serif;
+}
+
+/* Focus visibility kept consistent across themes */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
 }

@@ -1,335 +1,264 @@
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
-import { useLanguage } from "../context/languageContext";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
+import {
+  motion,
+  useAnimationFrame,
+  useMotionValue,
+  useReducedMotion,
+} from "motion/react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
-interface CarouselItem {
-  title?: string;
-  description?: string;
-  place?: string;
-  role?: string;
-  technologies?: string[];
-  repository?: string;
-  frontRepository?: string;
-  backRepository?: string;
-  name?: string;
-  linkedin?: string;
+interface CarouselProps<T> {
+  items: T[];
+  getKey: (item: T, index: number) => string;
+  renderItem: (item: T, index: number) => ReactNode;
+  ariaLabel: string;
+  prevLabel: string;
+  nextLabel: string;
+  slideLabel: (index: number, total: number) => string;
 }
 
-interface CarouselProps {
-  clickable?: boolean;
-  data: CarouselItem[];
+const GAP = 22; // px between slides (matches the flex gap below)
+const SPEED = 42; // px/s the ribbon drifts left while idle
+const RESUME_DELAY = 1600; // ms of no interaction before auto-scroll resumes
+const DRAG_THRESHOLD = 5; // px of movement before a press counts as a drag
+
+/** Positive modulo — keeps a value inside [min, max) so the ribbon loops seamlessly. */
+function wrap(min: number, max: number, value: number): number {
+  const range = max - min;
+  if (range <= 0) return min;
+  return min + (((value - min) % range) + range) % range;
 }
 
-export default function Carousel({ data, clickable }: CarouselProps) {
-  const { language } = useLanguage();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [cardPositions, setCardPositions] = useState<number[]>([]);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [cardHalfWidth, setCardHalfWidth] = useState(160);
+/**
+ * Auto-scrolling "cyclic ribbon" carousel: the slides drift left continuously and loop
+ * forever (the items are rendered twice so the wrap is seamless). Auto-scroll pauses on
+ * hover, focus, touch, drag, or arrow use, then resumes after `RESUME_DELAY` of calm.
+ * Drag/swipe and the arrows let the user move through the projects by hand. Auto-motion is
+ * disabled under `prefers-reduced-motion` (manual drag/arrows still work).
+ */
+export function Carousel<T>({
+  items,
+  getKey,
+  renderItem,
+  ariaLabel,
+  prevLabel,
+  nextLabel,
+  slideLabel,
+}: CarouselProps<T>) {
+  const shouldReduceMotion = useReducedMotion();
 
-  const datalist = data;
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const firstSlideRef = useRef<HTMLDivElement | null>(null);
+  const secondCopyStartRef = useRef<HTMLDivElement | null>(null);
 
-  const hasProjectFields = (item: CarouselItem) => {
-    return (
-      item.title ||
-      item.description ||
-      item.place ||
-      item.technologies?.length ||
-      item.repository ||
-      item.frontRepository ||
-      item.backRepository
-    );
-  };
+  const x = useMotionValue(0);
+  const baseX = useRef(0); // ribbon offset (may exceed range; x is the wrapped view of it)
+  const setWidthRef = useRef(0); // width of one full copy (the seamless loop distance)
+  const cardStepRef = useRef(320); // one slide + gap, for arrow nudges
+  const arrowTargetRef = useRef<number | null>(null); // glide target while an arrow is used
 
-  const openLink = (url?: string) => {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+  // Interaction flags — any of these pauses the auto drift.
+  const hoveringRef = useRef(false);
+  const draggingRef = useRef(false);
+  const lastInteractionRef = useRef(0);
 
-  const centerFirstCard = () => {
-    if (scrollContainerRef.current && datalist.length > 0) {
-      const container = scrollContainerRef.current;
-      const firstCard = container.children[0] as HTMLElement;
+  // Drag bookkeeping (hand-rolled so it can wrap infinitely, unlike framer's bounded drag).
+  const dragRef = useRef({ active: false, startX: 0, lastX: 0, moved: false, pointerId: -1 });
+  const suppressClickRef = useRef(false);
 
-      if (firstCard) {
-        // Calcula a posição correta para centralizar horizontalmente
-        const cardWidth = firstCard.offsetWidth;
-        const containerWidth = container.clientWidth;
-        const scrollPosition =
-          firstCard.offsetLeft - (containerWidth / 2 - cardWidth / 2);
+  const loopItems = [...items, ...items];
 
-        // Ajusta apenas o scroll horizontal
-        container.scrollTo({
-          left: scrollPosition,
-          behavior: "smooth",
-        });
-      }
+  const measure = useCallback(() => {
+    const first = firstSlideRef.current;
+    const secondStart = secondCopyStartRef.current;
+    if (first) cardStepRef.current = first.offsetWidth + GAP;
+    if (first && secondStart) {
+      setWidthRef.current = secondStart.offsetLeft - first.offsetLeft;
     }
-  };
-
-  const handlePrevious = () => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const containerWidth = container.clientWidth;
-
-      // Encontra o próximo card que está à direita do centro
-      const cards = Array.from(container.querySelectorAll(".carousel-card"));
-      let nextCard = null;
-
-      for (const card of cards) {
-        const rect = card.getBoundingClientRect();
-        const cardCenter =
-          rect.left + rect.width / 2 - container.getBoundingClientRect().left;
-
-        if (cardCenter > containerWidth / 2 + 10) {
-          // +10 para evitar flutuações
-          nextCard = card;
-          break;
-        }
-      }
-
-      if (nextCard) {
-        nextCard.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
-    }
-  };
-
-  const handleNext = () => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const containerWidth = container.clientWidth;
-
-      // Encontra o próximo card que está à esquerda do centro
-      const cards = Array.from(container.querySelectorAll(".carousel-card"));
-      let prevCard = null;
-
-      // Percorre do final para o início
-      for (let i = cards.length - 1; i >= 0; i--) {
-        const card = cards[i];
-        const rect = card.getBoundingClientRect();
-        const cardCenter =
-          rect.left + rect.width / 2 - container.getBoundingClientRect().left;
-
-        if (cardCenter < containerWidth / 2 - 10) {
-          // -10 para evitar flutuações
-          prevCard = card;
-          break;
-        }
-      }
-
-      if (prevCard) {
-        prevCard.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
-    }
-  };
-
-  const updateCardScales = () => {
-    if (!scrollContainerRef.current) return;
-
-    const cards = Array.from(
-      scrollContainerRef.current.querySelectorAll(".carousel-card"),
-    );
-    const positions = cards.map((card) => {
-      const rect = card.getBoundingClientRect();
-      const containerRect = scrollContainerRef.current!.getBoundingClientRect();
-      return rect.left + rect.width / 2 - containerRect.left;
-    });
-
-    setCardPositions(positions);
-  };
-
-  const calculateScale = (index: number) => {
-    if (cardPositions.length === 0) return 1;
-
-    // Do NOT read ref during render. Use state updated by effect/resize.
-    const width = containerWidth || 1000;
-    const cardCenter = cardPositions[index];
-    const containerCenter = width / 2;
-
-    const distance = Math.abs(cardCenter - containerCenter) / (width / 2);
-    const scale = 1.2 - distance * 0.4;
-
-    return Math.max(0.8, Math.min(1.2, scale));
-  };
+  }, []);
 
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
+    measure();
+    const viewport = viewportRef.current;
+    if (!viewport || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [measure, items.length]);
 
-    updateCardScales();
+  useAnimationFrame((_, delta) => {
+    const setWidth = setWidthRef.current;
+    if (!setWidth) return;
+    const dt = delta / 1000;
 
-    const handleResize = () => {
-      setContainerWidth(container.clientWidth);
-
-      const firstCard = container.querySelector(
-        ".carousel-card",
-      ) as HTMLElement | null;
-
-      if (firstCard) {
-        setCardHalfWidth(firstCard.offsetWidth / 2);
+    if (arrowTargetRef.current !== null) {
+      // Ease toward the arrow's target, then hand back to the auto/idle path.
+      const diff = arrowTargetRef.current - baseX.current;
+      if (Math.abs(diff) < 0.5) {
+        baseX.current = arrowTargetRef.current;
+        arrowTargetRef.current = null;
+      } else {
+        baseX.current += diff * Math.min(1, dt * 10);
       }
+    } else if (!draggingRef.current) {
+      const idle = performance.now() - lastInteractionRef.current > RESUME_DELAY;
+      if (!shouldReduceMotion && !hoveringRef.current && idle) {
+        baseX.current -= SPEED * dt;
+      }
+      // Keep baseX bounded; ±setWidth is one whole loop, so this never shows a jump.
+      if (baseX.current <= -setWidth) baseX.current += setWidth;
+      else if (baseX.current > setWidth) baseX.current -= setWidth;
+    }
 
-      centerFirstCard();
-      updateCardScales();
+    x.set(wrap(-setWidth, 0, baseX.current));
+  });
+
+  const nudge = useCallback((direction: 1 | -1) => {
+    lastInteractionRef.current = performance.now();
+    const from = arrowTargetRef.current ?? baseX.current;
+    arrowTargetRef.current = from - direction * cardStepRef.current;
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        nudge(1);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        nudge(-1);
+      }
+    },
+    [nudge],
+  );
+
+  const onPointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    dragRef.current = {
+      active: true,
+      startX: event.clientX,
+      lastX: event.clientX,
+      moved: false,
+      pointerId: event.pointerId,
     };
+    suppressClickRef.current = false;
+  }, []);
 
-    const handleScroll = () => {
-      updateCardScales();
-    };
+  const onPointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag.active) return;
 
-    handleResize();
+    if (!drag.moved && Math.abs(event.clientX - drag.startX) > DRAG_THRESHOLD) {
+      drag.moved = true;
+      draggingRef.current = true;
+      arrowTargetRef.current = null;
+      event.currentTarget.setPointerCapture(drag.pointerId);
+    }
+    if (drag.moved) {
+      baseX.current += event.clientX - drag.lastX;
+      lastInteractionRef.current = performance.now();
+    }
+    drag.lastX = event.clientX;
+  }, []);
 
-    const timeoutId = window.setTimeout(() => {
-      centerFirstCard();
-    }, 100);
+  const endDrag = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag.active) return;
+    drag.active = false;
+    draggingRef.current = false;
+    lastInteractionRef.current = performance.now();
+    if (drag.moved) {
+      suppressClickRef.current = true; // don't fire a card link after a swipe
+      if (event.currentTarget.hasPointerCapture?.(drag.pointerId)) {
+        event.currentTarget.releasePointerCapture(drag.pointerId);
+      }
+    }
+  }, []);
 
-    container.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      container.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [datalist.length]);
+  const onClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressClickRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      suppressClickRef.current = false;
+    }
+  }, []);
 
   return (
-    <div
-      id="projects"
-      className="relative flex h-[68vh] w-full flex-col sm:h-[72vh] lg:h-[80vh]"
-    >
+    <div role="group" aria-roledescription="carousel" aria-label={ariaLabel}>
       <div
-        ref={scrollContainerRef}
-        className="scroll-container scrollbar-hide flex h-full w-full flex-row items-center justify-start gap-6 overflow-x-scroll sm:gap-10 lg:gap-16"
-        style={{
-          paddingLeft: `${Math.max(16, containerWidth / 2 - cardHalfWidth)}px`,
-          paddingRight: `${Math.max(16, containerWidth / 2 - cardHalfWidth)}px`,
+        ref={viewportRef}
+        className="cursor-grab p-10 px-16 outline-none active:cursor-grabbing"
+        tabIndex={0}
+        style={{ touchAction: "pan-y" }}
+        onKeyDown={handleKeyDown}
+        onPointerEnter={() => {
+          hoveringRef.current = true;
         }}
+        onPointerLeave={() => {
+          hoveringRef.current = false;
+          lastInteractionRef.current = performance.now();
+        }}
+        onFocus={() => {
+          hoveringRef.current = true;
+        }}
+        onBlur={() => {
+          hoveringRef.current = false;
+          lastInteractionRef.current = performance.now();
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onClickCapture={onClickCapture}
       >
-        {datalist.map((item, index) => (
-          <div
-            key={index}
-            className={`carousel-card hover:shadow-xl ${clickable ? "hover:cursor-pointer" : ""} flex min-h-88 min-w-[min(82vw,20rem)] max-w-[min(82vw,20rem)]  shadow-(--color-text-secondary) flex-col rounded-xl bg-(--color-text-secondary-reversed) p-4 transition-transform duration-75 ease-in-out sm:min-h-96 sm:min-w-[20rem] sm:max-w-[20rem] sm:p-5 lg:min-w-[24rem] lg:max-w-[24rem] lg:rounded-lg`}
-            style={{
-              transform: `scale(${calculateScale(index)})`,
-              opacity: 0.5 + (calculateScale(index) - 0.8) / 0.8,
-              zIndex: Math.round(calculateScale(index) * 10),
-            }}
-            onClick={() => {
-              if (!clickable) return;
-
-              if (hasProjectFields(item)) {
-                openLink(
-                  item.repository ||
-                    item.frontRepository ||
-                    item.backRepository,
-                );
-                return;
-              }
-
-              openLink(item.linkedin);
-            }}
-          >
-            <div className="flex h-full flex-col gap-3 text-(--color-text-secondary)">
-              <h2 className="text-lg font-bold leading-tight lg:text-xl">
-                {item.title || item.name}
-              </h2>
-
-              {item.description && (
-                <p className="line-clamp-3 text-sm text-(--color-text-secondary)/80 lg:text-base">
-                  {item.description}
-                </p>
-              )}
-
-              {(item.place || item.role) && (
-                <p className="text-xs italic text-(--color-text-secondary)/70 lg:text-sm">
-                  {item.place
-                    ? `${language === "pt" ? "Local" : "Place"}: ${item.place}`
-                    : ""}
-                  {item.place && item.role ? " | " : ""}
-                  {item.role
-                    ? `${language === "pt" ? "Função" : "Role"}: ${item.role}`
-                    : ""}
-                </p>
-              )}
-
-              {item.technologies && item.technologies.length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {item.technologies.map((tech) => (
-                    <span
-                      key={`${item.title || item.name}-${tech}`}
-                      className="rounded-full border border-(--color-border-soft) px-2 py-1 text-xs font-medium"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-auto flex flex-wrap gap-2 pt-3">
-                {item.frontRepository && (
-                  <a
-                    href={item.frontRepository}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(event) => event.stopPropagation()}
-                    className="rounded-md bg-(--color-surface) border-2 border-(--color-text-secondary) border-dashed px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
-                  >
-                    {language === "pt" ? "Repo Front" : "Front Repo"}
-                  </a>
-                )}
-
-                {item.backRepository && (
-                  <a
-                    href={item.backRepository}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(event) => event.stopPropagation()}
-                    className="rounded-md bg-(--color-surface) border-2 border-(--color-text-secondary) border-dashed px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
-                  >
-                    {language === "pt" ? "Repo Back" : "Back Repo"}
-                  </a>
-                )}
-
-                {!item.frontRepository &&
-                  !item.backRepository &&
-                  item.repository && (
-                    <a
-                      href={item.repository}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(event) => event.stopPropagation()}
-                      className="rounded-md bg-(--color-surface) border-2 border-(--color-text-secondary) border-dashed px-3 py-1.5 text-xs font-semibold transition hover:brightness-95"
-                    >
-                      {language === "pt" ? "Repositório" : "Repository"}
-                    </a>
-                  )}
+        <motion.div className="flex" style={{ x, gap: `${GAP}px` }}>
+          {loopItems.map((item, i) => {
+            const baseIndex = i % items.length;
+            const isClone = i >= items.length;
+            return (
+              <div
+                key={`${getKey(item, baseIndex)}-${i}`}
+                ref={(el) => {
+                  if (i === 0) firstSlideRef.current = el;
+                  if (i === items.length) secondCopyStartRef.current = el;
+                }}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={slideLabel(baseIndex + 1, items.length)}
+                aria-hidden={isClone || undefined}
+                className="w-full flex-none sm:w-[70%] lg:w-[46%]"
+              >
+                {renderItem(item, baseIndex)}
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </motion.div>
       </div>
 
-      <div className="absolute top-1/2 z-40 hidden w-full -translate-y-1/2 transform justify-between px-4 sm:flex sm:px-6 lg:px-10">
+      <div className="mt-5 flex items-center justify-end gap-2">
         <button
-          onClick={handleNext}
-          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30 sm:p-2"
+          type="button"
+          aria-label={prevLabel}
+          onClick={() => nudge(-1)}
+          className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-colors duration-300"
+          style={{ borderColor: "var(--chip)", color: "var(--fg)" }}
         >
-          <CaretLeftIcon size={28} />
+          <CaretLeft size={16} weight="bold" />
         </button>
         <button
-          onClick={handlePrevious}
-          className="z-10 rounded-full bg-(--color-surface) p-1.5 shadow-md backdrop-blur-md duration-300 hover:cursor-pointer hover:bg-gray-400/30 sm:p-2"
+          type="button"
+          aria-label={nextLabel}
+          onClick={() => nudge(1)}
+          className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-colors duration-300"
+          style={{ borderColor: "var(--chip)", color: "var(--fg)" }}
         >
-          <CaretRightIcon size={28} />
+          <CaretRight size={16} weight="bold" />
         </button>
       </div>
     </div>

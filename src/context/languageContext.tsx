@@ -1,22 +1,22 @@
 import { createContext, useContext } from "react";
-import type { Language } from "../types/language";
+import type { Localized } from "../types/content";
 
-interface LanguageContextValue {
+export type Language = "pt" | "en";
+
+export interface LanguageContextValue {
   language: Language;
-  setLanguage: (language: Language) => void;
   toggleLanguage: () => void;
+  t: (value: Localized) => string;
 }
 
-export const LanguageContext = createContext<LanguageContextValue | undefined>(
-  undefined,
+export const LanguageContext = createContext<LanguageContextValue | null>(
+  null,
 );
 
-export function useLanguage() {
-  const context = useContext(LanguageContext);
-
-  if (!context) {
+export function useLanguage(): LanguageContextValue {
+  const ctx = useContext(LanguageContext);
+  if (!ctx) {
     throw new Error("useLanguage must be used within a LanguageProvider");
   }
-
-  return context;
+  return ctx;
 }

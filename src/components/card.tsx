@@ -1,36 +1,76 @@
-interface CardProps {
-  changing?: boolean;
-  skill: string;
-  index: number;
-  description: string;
-  category?: string;
-}
-
+import { motion } from "motion/react";
+import type { Project } from "../types/content";
 import { useLanguage } from "../context/languageContext";
 
-export default function Card({
-  skill,
-  description,
-  index,
-  category,
-  changing,
-}: CardProps) {
-  const { language } = useLanguage();
+interface CardProps {
+  project: Project;
+}
 
-  return (
-    <div
-      className={`flex w-full min-h-10 p-4 sm:w-auto sm:min-w-30 hover:scale-105 hover:shadow-2xl duration-100 transition-all hover:cursor-pointer ${changing ? "translate-y-10 opacity-0" : "translate-y-0 opacity-100"} flex-col gap-1 bg-(--color-card) text-(--color-text-primary) rounded-2xl border border-(--color-border-soft)`}
-      style={{ transitionDelay: `${index * 28}ms` }}
-    >
-      {category && (
-        <span className="w-fit rounded-full border border-(--color-border-soft) bg-(--color-surface) px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-          {category}
-        </span>
-      )}
-      <h2 className="font-bold">{skill}</h2>
-      <p>
-        {language === "pt" ? "Nível" : "Level"}: {description}
+const cardClassName =
+  "block h-full overflow-hidden rounded-[18px] border transition-shadow duration-[400ms]";
+
+const cardStyle = {
+  borderColor: "var(--cardbd)",
+  background: "var(--card)",
+  boxShadow: "var(--glow)",
+} as const;
+
+export function Card({ project }: CardProps) {
+  const { t } = useLanguage();
+
+  // No project photos — each card keeps a distinct identity via a top accent
+  // stripe in its own gradient instead of an image placeholder.
+  const cover = <div className="h-[6px] w-full" style={{ background: project.gradient }} />;
+
+  const body = (
+    <div className="p-[18px]">
+      <div
+        className="mono font-bold"
+        style={{ fontSize: "9px", color: "var(--accent)", letterSpacing: ".1em", textTransform: "uppercase" }}
+      >
+        {t(project.category)}
+      </div>
+      <h3
+        className="font-dm font-bold"
+        style={{ fontSize: "19px", color: "var(--ink)", margin: "6px 0 8px" }}
+      >
+        {project.title}
+      </h3>
+      <p
+        className="font-dm m-0"
+        style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--muted)" }}
+      >
+        {t(project.description)}
       </p>
     </div>
+  );
+
+  if (project.href) {
+    return (
+      <motion.a
+        href={project.href}
+        target="_blank"
+        rel="noreferrer"
+        whileHover={{ y: -8 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        className={cardClassName}
+        style={cardStyle}
+      >
+        {cover}
+        {body}
+      </motion.a>
+    );
+  }
+
+  return (
+    <motion.div
+      whileHover={{ y: -8 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      className={cardClassName}
+      style={cardStyle}
+    >
+      {cover}
+      {body}
+    </motion.div>
   );
 }
